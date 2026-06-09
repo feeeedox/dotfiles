@@ -1,22 +1,17 @@
-/* Matugen Rofi Template - Direktes Rasi Format */
 * {
-    /* Basisfarben */
     primary: {{colors.primary.default.hex}};
     secondary: {{colors.secondary.default.hex}};
     tertiary: {{colors.tertiary.default.hex}};
     error: {{colors.error.default.hex}};
 
-    /* Hintergrund- & Oberflächen-Töne */
     surface: {{colors.surface.default.hex}};
     surface-container: {{colors.surface_container.default.hex}};
     surface-container-highest: {{colors.surface_container_highest.default.hex}};
 
-    /* Text- & Kontrastfarben */
     on-surface: {{colors.on_surface.default.hex}};
     on-surface-variant: {{colors.on_surface_variant.default.hex}};
     outline: {{colors.outline.default.hex}};
 
-    /* --- Direktes Mapping für deine minimale Config --- */
     bg0: {{colors.surface.default.hex}};
     bg1: {{colors.surface_container_low.default.hex}};
     bg2: {{colors.surface_container.default.hex}};
