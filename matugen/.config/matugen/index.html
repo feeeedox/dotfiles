@@ -1,0 +1,877 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>GUI Title Builder</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: monospace;
+        background: #1a1a1a;
+        color: #ccc;
+        padding: 16px;
+      }
+      h1 {
+        color: #fff;
+        margin-bottom: 16px;
+        font-size: 16px;
+      }
+
+      .layout {
+        display: flex;
+        gap: 16px;
+      }
+      .left {
+        flex: 0 0 320px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .right {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      /* Preview */
+      #preview-wrap {
+        background: #2a2a2a;
+        border: 1px solid #444;
+        padding: 8px;
+        position: relative;
+        user-select: none;
+      }
+      #mc-gui {
+        position: relative;
+        width: 352px;
+        height: 222px;
+        background: #c6c6c6;
+        image-rendering: pixelated;
+        flex-shrink: 0;
+      }
+      #title-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 14px;
+        overflow: visible;
+      }
+      #inventory-grid {
+        position: absolute;
+        top: 14px;
+        left: 8px;
+        display: grid;
+        grid-template-columns: repeat(9, 18px);
+        grid-template-rows: repeat(6, 18px);
+        gap: 2px;
+      }
+      .slot {
+        width: 18px;
+        height: 18px;
+        background: #8b8b8b;
+        border-top: 1px solid #555;
+        border-left: 1px solid #555;
+        border-bottom: 1px solid #fff;
+        border-right: 1px solid #fff;
+      }
+      #canvas-preview {
+        position: absolute;
+        top: 0;
+        left: 0;
+        image-rendering: pixelated;
+        pointer-events: none;
+      }
+      #ruler {
+        position: relative;
+        width: 352px;
+        height: 18px;
+        background: #222;
+        border: 1px solid #444;
+        margin-top: 4px;
+        overflow: hidden;
+      }
+      #ruler canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      /* Components panel */
+      .panel {
+        background: #222;
+        border: 1px solid #444;
+        padding: 10px;
+      }
+      .panel h2 {
+        font-size: 12px;
+        color: #aaa;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      label {
+        font-size: 11px;
+        color: #888;
+        display: block;
+        margin-bottom: 2px;
+      }
+      input[type="text"],
+      input[type="number"],
+      select {
+        width: 100%;
+        background: #111;
+        border: 1px solid #444;
+        color: #eee;
+        padding: 3px 5px;
+        font-family: monospace;
+        font-size: 11px;
+        margin-bottom: 6px;
+      }
+      input[type="number"] {
+        width: 70px;
+      }
+      .row {
+        display: flex;
+        gap: 6px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+      }
+      .row > div {
+        flex: 1;
+        min-width: 60px;
+      }
+
+      .component-item {
+        border: 1px solid #444;
+        background: #1a1a1a;
+        padding: 6px 8px;
+        margin-bottom: 6px;
+        font-size: 11px;
+        position: relative;
+        cursor: grab;
+      }
+      .component-item.selected {
+        border-color: #77aaff;
+      }
+      .component-item .comp-label {
+        color: #aef;
+        font-weight: bold;
+      }
+      .component-item .comp-info {
+        color: #888;
+        font-size: 10px;
+      }
+      .comp-del {
+        position: absolute;
+        right: 6px;
+        top: 6px;
+        background: none;
+        border: none;
+        color: #f66;
+        cursor: pointer;
+        font-size: 13px;
+        line-height: 1;
+      }
+
+      button {
+        background: #333;
+        border: 1px solid #555;
+        color: #ccc;
+        padding: 4px 10px;
+        font-family: monospace;
+        font-size: 11px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #444;
+      }
+      button.primary {
+        background: #335;
+        border-color: #77f;
+        color: #aaf;
+      }
+
+      /* Export */
+      #export-out {
+        background: #111;
+        border: 1px solid #444;
+        padding: 8px;
+        font-size: 11px;
+        color: #8f8;
+        word-break: break-all;
+        white-space: pre-wrap;
+        min-height: 40px;
+        max-height: 120px;
+        overflow-y: auto;
+      }
+      .selected-panel {
+        border: 1px solid #555;
+        padding: 8px;
+        background: #1a1a1a;
+      }
+
+      /* drag handle for components on canvas */
+      .icon-handle {
+        position: absolute;
+        width: 4px;
+        cursor: ew-resize;
+        top: 0;
+        bottom: 0;
+        background: rgba(100, 150, 255, 0.5);
+      }
+
+      /* Checkers bg for transparent PNGs */
+      #mc-gui {
+        background-image:
+          linear-gradient(45deg, #999 25%, transparent 25%),
+          linear-gradient(-45deg, #999 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #999 75%),
+          linear-gradient(-45deg, transparent 75%, #999 75%);
+        background-size: 8px 8px;
+        background-position:
+          0 0,
+          0 4px,
+          4px -4px,
+          -4px 0;
+        background-color: #777;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🎮 GUI Title Builder</h1>
+
+    <div class="layout">
+      <!-- LEFT: controls -->
+      <div class="left">
+        <div class="panel">
+          <h2>Base Title</h2>
+          <label>Text</label>
+          <input
+            type="text"
+            id="baseTitle"
+            value="Alle Replays "
+            oninput="render()"
+          />
+        </div>
+
+        <div class="panel">
+          <h2>Background Icon</h2>
+          <div class="row">
+            <div>
+              <label>Icon</label>
+              <select id="bgIconSel" onchange="onBgIconChange()">
+                <option value="">— none —</option>
+                <option value="bg_all" selected>All Replays (뀁)</option>
+                <option value="bg_own">Own Replays (뀂)</option>
+                <option value="bg_fav">Favorites (뀃)</option>
+              </select>
+            </div>
+            <div>
+              <label>Width</label>
+              <input
+                type="number"
+                id="bgWidth"
+                value="176"
+                min="1"
+                max="400"
+                oninput="render()"
+              />
+            </div>
+            <div>
+              <label>CenterX</label>
+              <input
+                type="number"
+                id="bgCenterX"
+                value="88"
+                min="0"
+                max="400"
+                oninput="render()"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Add Component</h2>
+          <label>Type</label>
+          <select id="addType" onchange="onAddTypeChange()">
+            <option value="icon">Icon</option>
+            <option value="text">Text</option>
+          </select>
+
+          <div id="icon-fields">
+            <label>Icon</label>
+            <select id="addIconSel">
+              <option value="sort_recent">Sort Recent (뀄)</option>
+              <option value="sort_oldest">Sort Oldest (뀅)</option>
+              <option value="firstpage">First/Left Arrow (뀆)</option>
+              <option value="lastpage">Last/Right Arrow (뀇)</option>
+            </select>
+            <div class="row">
+              <div>
+                <label>Width (px)</label
+                ><input
+                  type="number"
+                  id="addWidth"
+                  value="16"
+                  min="1"
+                  max="400"
+                />
+              </div>
+              <div>
+                <label>Font</label
+                ><input
+                  type="text"
+                  id="addFont"
+                  value="replay-system"
+                  style="width: 120px"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div id="text-fields" style="display: none">
+            <label>Text</label>
+            <input type="text" id="addText" value="1/5" />
+            <label>Font</label>
+            <input type="text" id="addTextFont" value="row6" />
+          </div>
+
+          <div class="row" style="margin-top: 4px">
+            <div>
+              <label>CenterX (px)</label
+              ><input
+                type="number"
+                id="addCenterX"
+                value="60"
+                min="0"
+                max="400"
+              />
+            </div>
+          </div>
+          <button onclick="addComponent()" style="margin-top: 6px; width: 100%">
+            + Add
+          </button>
+        </div>
+
+        <div class="panel">
+          <h2>Components</h2>
+          <div id="comp-list"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: preview + export -->
+      <div class="right">
+        <div class="panel">
+          <h2>
+            Preview
+            <span style="color: #555; font-size: 10px"
+              >(drag icons to reposition)</span
+            >
+          </h2>
+          <div id="preview-wrap">
+            <canvas id="canvas-preview" width="352" height="14"></canvas>
+            <div id="ruler">
+              <canvas id="ruler-canvas" width="352" height="18"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Selected Component</h2>
+          <div id="sel-panel" class="selected-panel">
+            <span style="color: #555; font-size: 11px"
+              >Click a component in the list or drag on canvas</span
+            >
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Export — Java GuiTitleCalculator</h2>
+          <button
+            class="primary"
+            onclick="exportCode()"
+            style="margin-bottom: 8px"
+          >
+            Generate Code
+          </button>
+          <button
+            onclick="copyCode()"
+            style="margin-bottom: 8px; margin-left: 4px"
+          >
+            Copy
+          </button>
+          <div id="export-out">Click "Generate Code"</div>
+        </div>
+
+        <div class="panel">
+          <h2>MiniMessage Output</h2>
+          <div
+            id="mm-out"
+            style="
+              background: #111;
+              border: 1px solid #444;
+              padding: 8px;
+              font-size: 11px;
+              color: #fa8;
+              word-break: break-all;
+              white-space: pre-wrap;
+              min-height: 30px;
+            "
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ── Data ─────────────────────────────────────────────────────────────────────
+
+      ''' + f'const IMAGES = {{\n' + '\n'.join([f'  {k}: "data:image/png;base64,{v}",' for k,v in imgs.items()]) + '\n};\n' + '''
+      // Map icon select value → {char, fontChar, naturalWidth, naturalHeight}
+      const ICON_META = {
+        bg_all:       { char: "\\uB001", font: "replay-system", natW: 176, natH: 222 },
+        bg_own:       { char: "\\uB002", font: "replay-system", natW: 176, natH: 222 },
+        bg_fav:       { char: "\\uB003", font: "replay-system", natW: 176, natH: 222 },
+        sort_recent:  { char: "\\uB004", font: "replay-system", natW: 16,  natH: 16  },
+        sort_oldest:  { char: "\\uB005", font: "replay-system", natW: 16,  natH: 16  },
+        firstpage:    { char: "\\uB006", font: "replay-system", natW: 34,  natH: 16  },
+        lastpage:     { char: "\\uB007", font: "replay-system", natW: 34,  natH: 16  },
+      };
+
+      // Background: always rendered before base title
+      let bgIcon = { key: "bg_all", width: 176, centerX: 88 };
+
+      // Components: {id, type:"icon"|"text", key?, width?, font, centerX, text?}
+      let components = [];
+      let nextId = 1;
+      let selectedId = null;
+
+      // ── Vanilla char widths (default font) ───────────────────────────────────────
+      // Approximate widths from Minecraft's default font (matches MinecraftFont.Font)
+      const CHAR_WIDTHS = {};
+      const DEFAULT_WIDTHS = {
+        ' ':3,'!':1,'"':3,'#':5,'$':5,'%':5,'&':5,"'":1,'(':4,')':4,'*':5,'+':5,
+        ',':1,'-':5,'.':1,'/':5,'0':5,'1':5,'2':5,'3':5,'4':5,'5':5,'6':5,'7':5,
+        '8':5,'9':5,':':1,';':1,'<':4,'=':5,'>':4,'?':5,'@':6,'A':5,'B':5,'C':5,
+        'D':5,'E':5,'F':5,'G':5,'H':5,'I':3,'J':5,'K':5,'L':5,'M':5,'N':5,'O':5,
+        'P':5,'Q':5,'R':5,'S':5,'T':5,'U':5,'V':5,'W':5,'X':5,'Y':5,'Z':5,'[':3,
+        '\\\\':5,']':3,'^':5,'_':5,'`':3,'a':5,'b':5,'c':5,'d':5,'e':5,'f':4,'g':5,
+        'h':5,'i':1,'j':5,'k':4,'l':2,'m':5,'n':5,'o':5,'p':5,'q':5,'r':5,'s':5,
+        't':3,'u':5,'v':5,'w':5,'x':5,'y':5,'z':5,'{':3,'|':1,'}':3,'~':6,
+      };
+      function getVanillaWidth(text) {
+        let w = 0;
+        for (const ch of text) {
+          w += (DEFAULT_WIDTHS[ch] || 5) + 1; // +1 shadow gap
+        }
+        return w > 0 ? w - 1 : 0; // no trailing gap
+      }
+
+      // ── Rendering ─────────────────────────────────────────────────────────────────
+
+      const MC_SCALE = 2; // 2px per mc-pixel for the preview canvas
+      const TITLE_Y_OFFSET = 4; // pixels from top of inventory where title text sits
+      const CANVAS_H = 14;
+
+      function render() {
+        const canvas = document.getElementById("canvas-preview");
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const baseTitle = document.getElementById("baseTitle").value;
+        const bg = bgIcon;
+
+        // Draw bg icon centered at bgCenterX
+        if (bg.key && IMAGES[bg.key]) {
+          drawIcon(ctx, bg.key, bg.width, bg.centerX, 0, true);
+        }
+
+        // Base title
+        drawText(ctx, baseTitle, 0, "#373737");
+
+        // Components
+        const baseOffset = -getVanillaWidth(baseTitle);
+        for (const c of components) {
+          if (c.type === "icon") {
+            drawIcon(ctx, c.key, c.width, c.centerX, baseOffset, false);
+          } else {
+            drawTextComp(ctx, c.text, c.font, c.centerX, baseOffset);
+          }
+        }
+
+        drawRuler();
+      }
+
+      function drawIcon(ctx, key, width, centerX, baseOffset, isBg) {
+        // baseOffset = 0 for bg icons, or -textWidth for overlays
+        const startX = baseOffset + centerX - Math.floor(width / 2);
+        const img = imageCache[key];
+        if (!img) return;
+
+        // The PNG is 256px tall in resource pack but the actual icon height varies.
+        // height=256 in font def means the glyph spans full 256px at ascent=13 from top of inventory.
+        // For preview purposes we scale the icon to (width x guiSlotHeight) roughly
+        const H = isBg ? CANVAS_H : 12; // bg spans title area; icons are smaller
+        const srcH = img.naturalHeight; // 256 for most
+        const srcW = img.naturalWidth;
+
+        // The icon in-game fills 'width' pixels wide and 'H' pixels tall at our scale
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(img, 0, 0, srcW, srcH, startX * MC_SCALE, 0, width * MC_SCALE, H);
+      }
+
+      function drawText(ctx, text, xOffset, color) {
+        ctx.font = "bold 7px monospace";
+        ctx.fillStyle = color || "#373737";
+        ctx.fillText(text, xOffset * MC_SCALE, 10);
+      }
+
+      function drawTextComp(ctx, text, font, centerX, baseOffset) {
+        const tw = getVanillaWidth(text);
+        const startX = baseOffset + centerX - Math.floor(tw / 2);
+        ctx.font = "bold 7px monospace";
+        ctx.fillStyle = "#fff";
+        ctx.fillText(text, startX * MC_SCALE, 10);
+      }
+
+      // Image cache
+      const imageCache = {};
+      for (const [k, src] of Object.entries(IMAGES)) {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => render();
+        imageCache[k] = img;
+      }
+
+      function drawRuler() {
+        const canvas = document.getElementById("ruler-canvas");
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#333";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = "#555";
+        ctx.fillStyle = "#666";
+        ctx.font = "8px monospace";
+        for (let px = 0; px <= 176; px += 8) {
+          const x = px * MC_SCALE;
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, px % 32 === 0 ? 10 : px % 16 === 0 ? 7 : 4);
+          ctx.stroke();
+          if (px % 16 === 0) {
+            ctx.fillStyle = "#666";
+            ctx.fillText(px, x + 1, 16);
+          }
+        }
+        // Mark bg centerX
+        const bx = bgIcon.centerX * MC_SCALE;
+        ctx.strokeStyle = "#f804";
+        ctx.beginPath(); ctx.moveTo(bx, 0); ctx.lineTo(bx, 18); ctx.stroke();
+        // Mark component centerXs
+        const baseOffset = -getVanillaWidth(document.getElementById("baseTitle").value);
+        for (const c of components) {
+          const cx = (baseOffset + c.centerX) * MC_SCALE;
+          ctx.strokeStyle = c.id === selectedId ? "#77f" : "#4a4";
+          ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, 18); ctx.stroke();
+        }
+      }
+
+      // ── Component management ──────────────────────────────────────────────────────
+
+      function onAddTypeChange() {
+        const t = document.getElementById("addType").value;
+        document.getElementById("icon-fields").style.display = t === "icon" ? "" : "none";
+        document.getElementById("text-fields").style.display = t === "text" ? "" : "none";
+      }
+
+      function onBgIconChange() {
+        const sel = document.getElementById("bgIconSel").value;
+        bgIcon.key = sel;
+        if (sel && ICON_META[sel]) bgIcon.width = ICON_META[sel].natW;
+        document.getElementById("bgWidth").value = bgIcon.width;
+        render();
+      }
+
+      function addComponent() {
+        const type = document.getElementById("addType").value;
+        const centerX = parseInt(document.getElementById("addCenterX").value) || 60;
+        let comp = { id: nextId++, type, centerX };
+        if (type === "icon") {
+          const key = document.getElementById("addIconSel").value;
+          comp.key = key;
+          comp.width = parseInt(document.getElementById("addWidth").value) || 16;
+          comp.font = document.getElementById("addFont").value || "replay-system";
+          if (ICON_META[key]) comp.width = ICON_META[key].natW;
+          document.getElementById("addWidth").value = comp.width;
+        } else {
+          comp.text = document.getElementById("addText").value || "1/5";
+          comp.font = document.getElementById("addTextFont").value || "row6";
+        }
+        components.push(comp);
+        renderCompList();
+        render();
+      }
+
+      function removeComponent(id) {
+        components = components.filter(c => c.id !== id);
+        if (selectedId === id) { selectedId = null; renderSelPanel(); }
+        renderCompList();
+        render();
+      }
+
+      function selectComponent(id) {
+        selectedId = id;
+        renderSelPanel();
+        renderCompList();
+        render();
+      }
+
+      function renderCompList() {
+        const el = document.getElementById("comp-list");
+        if (!components.length) { el.innerHTML = '<span style="color:#555;font-size:11px">No components</span>'; return; }
+        el.innerHTML = components.map(c => {
+          const sel = c.id === selectedId ? " selected" : "";
+          const info = c.type === "icon"
+            ? `icon=${c.key}  w=${c.width}  cx=${c.centerX}  font=${c.font}`
+            : `text="${c.text}"  cx=${c.centerX}  font=${c.font}`;
+          return `<div class="component-item${sel}" onclick="selectComponent(${c.id})">
+            <button class="comp-del" onclick="event.stopPropagation();removeComponent(${c.id})">✕</button>
+            <div class="comp-label">${c.type.toUpperCase()} #${c.id}</div>
+            <div class="comp-info">${info}</div>
+          </div>`;
+        }).join("");
+      }
+
+      function renderSelPanel() {
+        const el = document.getElementById("sel-panel");
+        const c = components.find(x => x.id === selectedId);
+        if (!c) { el.innerHTML = '<span style="color:#555;font-size:11px">Nothing selected</span>'; return; }
+        if (c.type === "icon") {
+          el.innerHTML = `
+            <div class="row" style="margin-bottom:6px">
+              <div><label>CenterX</label><input type="number" id="sel-cx" value="${c.centerX}" min="0" max="400" oninput="updateSelected()" style="width:70px"></div>
+              <div><label>Width</label><input type="number" id="sel-w" value="${c.width}" min="1" max="400" oninput="updateSelected()" style="width:70px"></div>
+              <div><label>Font</label><input type="text" id="sel-font" value="${c.font}" oninput="updateSelected()" style="width:120px"></div>
+            </div>
+            <label>Icon</label>
+            <select id="sel-key" onchange="updateSelected()">
+              ${Object.keys(ICON_META).filter(k=>!k.startsWith("bg")).map(k=>`<option value="${k}" ${k===c.key?"selected":""}>${k}</option>`).join("")}
+            </select>`;
+        } else {
+          el.innerHTML = `
+            <div class="row">
+              <div><label>CenterX</label><input type="number" id="sel-cx" value="${c.centerX}" min="0" max="400" oninput="updateSelected()" style="width:70px"></div>
+              <div><label>Font</label><input type="text" id="sel-font" value="${c.font}" oninput="updateSelected()" style="width:120px"></div>
+            </div>
+            <label>Text</label>
+            <input type="text" id="sel-text" value="${c.text}" oninput="updateSelected()">`;
+        }
+      }
+
+      function updateSelected() {
+        const c = components.find(x => x.id === selectedId);
+        if (!c) return;
+        const cx = document.getElementById("sel-cx");
+        const font = document.getElementById("sel-font");
+        if (cx) c.centerX = parseInt(cx.value) || 0;
+        if (font) c.font = font.value;
+        if (c.type === "icon") {
+          const w = document.getElementById("sel-w");
+          const k = document.getElementById("sel-key");
+          if (w) c.width = parseInt(w.value) || 16;
+          if (k) c.key = k.value;
+        } else {
+          const t = document.getElementById("sel-text");
+          if (t) c.text = t.value;
+        }
+        renderCompList();
+        render();
+      }
+
+      // ── Drag on canvas ─────────────────────────────────────────────────────────────
+
+      let dragging = null;
+      let dragStartX = 0;
+      let dragOrigCX = 0;
+      let dragTarget = null; // "bg" or component id
+
+      const previewCanvas = document.getElementById("canvas-preview");
+
+      previewCanvas.addEventListener("mousedown", e => {
+        const rect = previewCanvas.getBoundingClientRect();
+        const mx = (e.clientX - rect.left) / MC_SCALE;
+        const baseOffset = -getVanillaWidth(document.getElementById("baseTitle").value);
+
+        // Check components first
+        for (const c of [...components].reverse()) {
+          let startX, width;
+          if (c.type === "icon") {
+            startX = baseOffset + c.centerX - Math.floor(c.width / 2);
+            width = c.width;
+          } else {
+            const tw = getVanillaWidth(c.text);
+            startX = baseOffset + c.centerX - Math.floor(tw / 2);
+            width = tw;
+          }
+          if (mx >= startX && mx <= startX + width) {
+            dragging = true; dragTarget = c.id;
+            dragStartX = mx; dragOrigCX = c.centerX;
+            selectComponent(c.id);
+            previewCanvas.style.cursor = "ew-resize";
+            return;
+          }
+        }
+        // bg icon
+        {
+          const startX = bgIcon.centerX - Math.floor(bgIcon.width / 2);
+          if (mx >= startX && mx <= startX + bgIcon.width) {
+            dragging = true; dragTarget = "bg";
+            dragStartX = mx; dragOrigCX = bgIcon.centerX;
+            previewCanvas.style.cursor = "ew-resize";
+          }
+        }
+      });
+
+      document.addEventListener("mousemove", e => {
+        if (!dragging) return;
+        const rect = previewCanvas.getBoundingClientRect();
+        const mx = (e.clientX - rect.left) / MC_SCALE;
+        const delta = Math.round(mx - dragStartX);
+        const newCX = dragOrigCX + delta;
+
+        if (dragTarget === "bg") {
+          bgIcon.centerX = Math.max(0, newCX);
+          document.getElementById("bgCenterX").value = bgIcon.centerX;
+        } else {
+          const c = components.find(x => x.id === dragTarget);
+          if (c) { c.centerX = Math.max(0, newCX); renderSelPanel(); renderCompList(); }
+        }
+        render();
+      });
+
+      document.addEventListener("mouseup", () => {
+        if (dragging) { dragging = false; dragTarget = null; previewCanvas.style.cursor = ""; }
+      });
+
+      // Sync bg inputs
+      document.getElementById("bgCenterX").addEventListener("input", () => {
+        bgIcon.centerX = parseInt(document.getElementById("bgCenterX").value) || 0;
+        render();
+      });
+      document.getElementById("bgWidth").addEventListener("input", () => {
+        bgIcon.width = parseInt(document.getElementById("bgWidth").value) || 176;
+        render();
+      });
+
+      // ── Export ────────────────────────────────────────────────────────────────────
+
+      const ICON_CHARS = {
+        bg_all: "\\uB001", bg_own: "\\uB002", bg_fav: "\\uB003",
+        sort_recent: "\\uB004", sort_oldest: "\\uB005",
+        firstpage: "\\uB006", lastpage: "\\uB007",
+      };
+
+      function exportCode() {
+        const baseTitle = document.getElementById("baseTitle").value;
+        const lines = [];
+        lines.push(`var calculator = api.guiTitleCalculator()`);
+        lines.push(`    .baseTitle("${baseTitle}")`);
+
+        if (bgIcon.key) {
+          const ch = ICON_CHARS[bgIcon.key] || "?";
+          lines.push(`    .backgroundIcon("${ch}", ${bgIcon.width}, ServerFont.REPLAY_SYSTEM.toMiniMessageTag(), ${bgIcon.centerX})`);
+        }
+
+        for (const c of components) {
+          if (c.type === "icon") {
+            const ch = ICON_CHARS[c.key] || "?";
+            const fontArg = c.font === "replay-system"
+              ? "ServerFont.REPLAY_SYSTEM.toMiniMessageTag()"
+              : `"<font:${c.font}>"`;
+            lines.push(`    .absoluteIcon("${ch}", ${c.width}, ${fontArg}, ${c.centerX})`);
+          } else {
+            const fontArg = c.font === "row6"
+              ? "ServerFont.ROW_6.toMiniMessageTag()"
+              : `"<font:${c.font}>"`;
+            lines.push(`    .absoluteText("${c.text}", ${fontArg}, ${c.centerX})`);
+          }
+        }
+        lines[lines.length - 1] += ";";
+
+        const code = lines.join("\\n");
+        document.getElementById("export-out").textContent = code;
+
+        // Also generate MiniMessage string
+        document.getElementById("mm-out").textContent = buildMiniMessage(baseTitle);
+      }
+
+      function buildMiniMessage(baseTitle) {
+        const bOffset = -getVanillaWidth(baseTitle);
+        let out = "";
+
+        // bg icon
+        if (bgIcon.key) {
+          const startX = bgIcon.centerX - Math.floor(bgIcon.width / 2);
+          const endX = startX + bgIcon.width + 1;
+          out += `<font:space>${spaceChars(startX)}<white><font:replay-system>${ICON_CHARS[bgIcon.key] || "?"}<font:space>${spaceChars(-endX)}<font:default>`;
+        }
+
+        out += `<font:default><#373737>${baseTitle}`;
+
+        for (const c of components) {
+          if (c.type === "icon") {
+            const startX = bOffset + c.centerX - Math.floor(c.width / 2);
+            const endX = startX + c.width + 1;
+            out += `<font:space>${spaceChars(startX)}<white><font:${c.font}>${ICON_CHARS[c.key] || "?"}<font:space>${spaceChars(-endX)}<font:default>`;
+          } else {
+            const tw = getVanillaWidth(c.text);
+            const startX = bOffset + c.centerX - Math.floor(tw / 2);
+            const endX = startX + tw + 1;
+            out += `<font:space>${spaceChars(startX)}<white><font:${c.font}>${c.text}<font:space>${spaceChars(-endX)}<font:default>`;
+          }
+        }
+        return out;
+      }
+
+      function spaceChars(pixels) {
+        if (pixels === 0) return "";
+        let remaining = Math.abs(pixels);
+        const neg = pixels < 0;
+        const units = neg
+          ? [128,64,32,16,8,4,2,1]
+          : [128,64,32,16,8,4,2,1];
+        const LEFT  = ["\\uF801","\\uF802","\\uF803","\\uF804","\\uF805","\\uF806","\\uF807","\\uF808"];
+        const RIGHT = ["\\uF811","\\uF812","\\uF813","\\uF814","\\uF815","\\uF816","\\uF817","\\uF818"];
+        let res = "";
+        for (let i = 0; i < units.length; i++) {
+          const u = units[i];
+          while (remaining >= u) {
+            res += neg ? LEFT[i] : RIGHT[i];
+            remaining -= u;
+          }
+        }
+        return res;
+      }
+
+      function copyCode() {
+        const text = document.getElementById("export-out").textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          const btn = event.target;
+          btn.textContent = "Copied!";
+          setTimeout(() => btn.textContent = "Copy", 1500);
+        });
+      }
+
+      // ── Init ──────────────────────────────────────────────────────────────────────
+      renderCompList();
+      render();
+    </script>
+  </body>
+</html>
