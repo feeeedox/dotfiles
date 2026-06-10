@@ -1,0 +1,25 @@
+* {
+    primary: #adc6ff;
+    secondary: #bfc6dc;
+    tertiary: #debcdf;
+    error: #ffb4ab;
+
+    surface: #111318;
+    surface-container: #1e1f25;
+    surface-container-highest: #33353a;
+
+    on-surface: #e2e2e9;
+    on-surface-variant: #c4c6d0;
+    outline: #8e9099;
+
+    bg0: #111318;
+    bg1: #1a1b20;
+    bg2: #1e1f25;
+    bg3: #33353a;
+    bg4: #37393e;
+    text: #e2e2e9;
+    red: #ffb4ab;
+    green: #debcdf;
+    blue: #adc6ff;
+    grey1: #c4c6d0;
+}
