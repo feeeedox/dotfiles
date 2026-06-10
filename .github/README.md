@@ -29,6 +29,6 @@
 
 </details>
 
-## Color Switcher depending on the Wallpaper
+## Wallpaper-based theme
 
-![Wallpaper Switcher](assets/switcher.mp4)
+![Gif](assets/switcher.gif)
