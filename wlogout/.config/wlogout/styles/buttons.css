@@ -1,0 +1,47 @@
+#lock {
+  background-image: image(url("../icons/lock.png"));
+}
+
+#lock:hover {
+  background-image: image(url("../icons/lock-hover.png"));
+}
+
+#hibernate {
+  background-image: image(url("../icons/hibernate.png"));
+}
+
+#hibernate:hover {
+  background-image: image(url("../icons/hibernate-hover.png"));
+}
+
+#logout {
+  background-image: image(url("../icons/logout.png"));
+}
+
+#logout:hover {
+  background-image: image(url("../icons/logout-hover.png"));
+}
+
+#shutdown {
+  background-image: image(url("../icons/power.png"));
+}
+
+#shutdown:hover {
+  background-image: image(url("../icons/power-hover.png"));
+}
+
+#reboot {
+  background-image: image(url("../icons/restart.png"));
+}
+
+#reboot:hover {
+  background-image: image(url("../icons/restart-hover.png"));
+}
+
+#suspend {
+  background-image: image(url("../icons/hibernate.png"));
+}
+
+#suspend:hover {
+  background-image: image(url("../icons/hibernate-hover.png"));
+}
