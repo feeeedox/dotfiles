@@ -1,0 +1,157 @@
+{
+    "margin-top": 13, // technically this should be 15px to be perfectly centered, but I prefer the look of 13px
+    "clock": {
+        "format": "{:%I:%M %p}",
+        "format-alt": "{:%a, %d. %b}",
+    },
+    "custom/notification": {
+        "tooltip": true,
+        "format": "<span size='16pt'>{icon}</span>",
+        "format-icons": {
+            "notification": "󱅫",
+            "none": "󰂜",
+            "dnd-notification": "󰂠",
+            "dnd-none": "󰪓",
+            "inhibited-notification": "󰂛",
+            "inhibited-none": "󰪑",
+            "dnd-inhibited-notification": "󰂛",
+            "dnd-inhibited-none": "󰪑",
+        },
+        "return-type": "json",
+        "exec-if": "which swaync-client",
+        "exec": "swaync-client -swb",
+        "on-click": "swaync-client -t -sw",
+        "on-click-right": "swaync-client -d -sw",
+        "escape": true,
+    },
+    "custom/media": {
+        "format": "{}",
+        "escape": true,
+        "return-type": "json",
+        "max-length": 35,
+        "on-click": "playerctl play-pause",
+        "on-click-right": "playerctl stop",
+        "smooth-scrolling-threshold": 1,
+        "on-scroll-up": "playerctl next",
+        "on-scroll-down": "playerctl previous",
+        "exec": "$HOME/.config/waybar/scripts/mediaplayer.py 2> /dev/null",
+    },
+    "hyprland/workspaces": {
+        "format": "{name}",
+        "all-outputs": false,
+        "active-only": false,
+        "on-click": "activate",
+        "format-icons": {
+            "1": "",
+            "2": "",
+            "3": "",
+            "4": "",
+            "5": "",
+            "active": "",
+            "default": "",
+        },
+        "persistent-workspaces": {
+            "DP-1": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "HDMI-A-1": [
+                6,
+                7,
+                8,
+                9,
+                10
+            ],
+        },
+    },
+    "custom/weather": {
+        "exec": "${HOME}/.config/waybar/scripts/get_weather.sh Rostock+Germany",
+        "return-type": "json",
+        "format": "{}",
+        "tooltip": true,
+        "interval": 3600,
+    },
+    "pulseaudio": {
+        "format": "{icon}  {volume}%",
+        "format-bluetooth": "{volume}%  {icon}",
+        "format-muted": "",
+        "format-icons": {
+            "headphone": "",
+            "hands-free": "",
+            "headset": "",
+            "phone": "",
+            "phone-muted": "",
+            "portable": "",
+            "car": "",
+            "default": [
+                "",
+                ""
+            ],
+        },
+        "scroll-step": 1,
+        "on-click": "pavucontrol",
+        "ignored-sinks": [
+            "Easy Effects Sink"
+        ],
+    },
+    "custom/pacman": {
+        "format": "  {}",
+        "interval": 3600,
+        "return-type": "plaintext",
+        "exec": "~/.config/waybar/scripts/check_updates.sh",
+        "on-click": "kitty --hold sh -c 'sudo arch-update; pkill -SIGRTMIN+8 waybar'",
+        "signal": 8,
+    },
+    "network": {
+        "format": "{ifname}",
+        "format-wifi": "{essid} ({signalStrength}%)  ",
+        "format-ethernet": "󰊗  Ethernet",
+        "format-disconnected": "",
+        "tooltip-format": "{ifname} via {gwaddr}  󰊗",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%) \nIP: {ipaddr}",
+        "tooltip-format-ethernet": "{ifname} \nIP: {ipaddr}",
+        "tooltip-format-disconnected": "Disconnected",
+        "max-length": 50,
+    },
+    "custom/launcher": {
+        "format": "󰣇",
+        "on-click": "~/.config/rofi/launchers/type-7/launcher.sh",
+    },
+    "power-profiles-daemon": {
+        "format": "{icon}",
+        "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
+        "tooltip": true,
+        "format-icons": {
+            "default": "",
+            "performance": "",
+            "balanced": "",
+            "power-saver": "",
+        },
+    },
+    "tray": {
+        "icon-size": 21,
+        "spacing": 10,
+        "show-passive-items": true
+    },
+    "layer": "top",
+    "modules-left": [
+        "custom/launcher",
+        "clock",
+        "hyprland/workspaces"
+    ],
+    "modules-center": [
+        "custom/notification",
+        "custom/media"
+    ],
+    "modules-right": [
+        "tray",
+        "custom/pacman",
+        "custom/weather",
+        "pulseaudio",
+        "network",
+        "power-profiles-daemon"
+    ],
+}

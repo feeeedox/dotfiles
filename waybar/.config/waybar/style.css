@@ -1,0 +1,125 @@
+@import "colors/matugen.css";
+
+* {
+    border: none;
+    font-weight: 500;
+    border-radius: 0;
+    font-family:
+        "Adwaita Sans", "JetBrainsMono Nerd Font Propo", "Roboto", "Helvetica",
+        "Arial", "sans-serif";
+    font-size: 1.1rem;
+    min-height: 0;
+    border-radius: 50px;
+}
+
+window#waybar {
+    background: transparent;
+}
+
+tooltip {
+    background: @surface;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+}
+
+tooltip label {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.modules-left  { margin-left: 15px; }
+.modules-right { margin-right: 15px; }
+
+/* Shared Pill */
+#custom-launcher,
+#clock,
+#workspaces,
+#tray,
+#custom-notification,
+#custom-media,
+#custom-pacman,
+#custom-weather,
+#pulseaudio,
+#battery,
+#network,
+#power-profiles-daemon,
+#backlight,
+#cpu,
+#memory,
+#idle-inhibitor,
+#custom-vpn {
+    background-color: alpha(@surface_container_high, 0.75);
+    border: 1px solid alpha(@outline_variant, 0.6);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+    color: @on_surface_variant;
+    margin-right: 10px;
+    padding: 0px 10px;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+/* Hover States */
+#custom-launcher:hover,
+#clock:hover,
+#workspaces button:hover,
+#custom-notification:hover,
+#custom-media:hover,
+#custom-pacman:hover,
+#custom-weather:hover,
+#pulseaudio:hover,
+#battery:hover,
+#network:hover,
+#power-profiles-daemon:hover,
+#backlight:hover,
+#cpu:hover,
+#memory:hover,
+#idle-inhibitor:hover,
+#custom-vpn:hover {
+    background-color: alpha(@surface_container_highest, 0.85);
+    border-color: alpha(@outline, 0.7);
+}
+
+/* Module Tweaks */
+#power-profiles-daemon {
+    margin-right: 0;
+}
+
+/* Workspaces */
+#workspaces {
+    padding: 4px 6px;
+}
+
+#workspaces button {
+    padding: 0px 6px;
+    margin: 0px 3px;
+    transition: all 0.3s ease-in-out;
+    border-radius: 10px;
+    color: alpha(@on_surface_variant, 0.7);
+}
+
+#workspaces button:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: @secondary;
+    min-width: 45px;
+    background-size: 400% 400%;
+}
+
+#workspaces button.active {
+    color: @surface;
+    background-color: @primary;
+    min-width: 50px;
+    border-radius: 7px;
+}
+
+#workspaces button.urgent {
+    background-color: @error;
+    color: @surface;
+}
+
+
+/* Notification */
+#custom-notification {
+    transition: all 0.3s ease-in-out;
+}
