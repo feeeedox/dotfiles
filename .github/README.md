@@ -15,3 +15,20 @@
       <br>
    </div>
 </h1>
+
+## Screenshots
+
+![Screenshot](assets/preview_1.png)
+![Screenshot](assets/preview_2.png)
+
+<details>
+<summary>More screenshots</summary>
+
+![Screenshot](assets/preview_3.png)
+![Screenshot](assets/preview_4.png)
+
+</details>
+
+## Color Switcher depending on the Wallpaper
+
+<video source="assets/switcher.mp4" controls muted>
