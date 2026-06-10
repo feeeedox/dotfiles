@@ -31,4 +31,4 @@
 
 ## Color Switcher depending on the Wallpaper
 
-<video source="assets/switcher.mp4" controls muted>
+![Wallpaper Switcher](assets/switcher.mp4)
