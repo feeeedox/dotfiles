@@ -8,12 +8,9 @@
    <div align="center">
       <p></p>
       <div align="center">
-         <a href="https://github.com/feeeedox/dotfiles/stargazers">
-            <img src="https://img.shields.io/github/stars/feeeedox/dotfiles?color=F5BDE6&labelColor=3f3f46&style=for-the-badge&logo=starship&logoColor=ffffff">
-         </a>
-         <a href="https://github.com/feeeedox/dotfiles/network/members">
-            <img src="https://img.shields.io/github/forks/feeeedox/dotfiles?color=C6A0F6&labelColor=3f3f46&style=for-the-badge&logo=git&logoColor=ffffff" alt="GitHub Forks">
-         </a>
+         <img src="https://shieldcn.dev/group/github/stars/feeeedox/dotfiles+github/forks/feeeedox/dotfiles+github/license/feeeedox/dotfiles.svg?variant=ghost&theme=zinc">
+         <p></p>
+         <img src="https://shieldcn.dev/flag/de.svg?theme=zinc"> <img src="https://shieldcn.dev/badge/Built%20for-Hyprland%20&%20Arch%20Linux.svg?theme=zinc">
       </div>
       <br>
    </div>
