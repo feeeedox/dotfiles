@@ -1,7 +1,7 @@
 -- Generated Matugen files for Hyprland lua
 local M = {}
 
-M.image = "/home/fedox/Pictures/Wallpapers/black-and-white-6016x3384-21293.jpg"
+M.image = "/home/fedox/Dotfiles/wallpapers/Pictures/Wallpapers/black-and-white-6016x3384-21293.jpg"
 
 M.background = "rgba(111318ff)"
 
