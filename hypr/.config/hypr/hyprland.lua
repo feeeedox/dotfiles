@@ -192,6 +192,10 @@ hl.animation({ leaf = "zoomFactor",    enabled = true,  speed = 7,    bezier = "
 --     rounding    = 0,
 -- })
 
+-- Automatically go to workspapce 6 on the 2k monitor and workspace 1 on the 1080p monitor
+hl.workspace_rule({ workspace = "w[tv1]", monitor = "HDMI-A-1" })
+hl.workspace_rule({ workspace = "f[1]",   monitor = "DP-1" })
+
 -- See https://wiki.hypr.land/Configuring/Layouts/Dwindle-Layout/ for more
 hl.config({
     dwindle = {
