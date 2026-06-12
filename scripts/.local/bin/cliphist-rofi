@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# This script is needed to get the clipboard history from cliphist and display it in rofi with thumbnails for image items. When an item is selected, it is decoded and copied to the clipboard using wl-copy.
+
 thumbnail_dir="${XDG_CACHE_HOME:-$HOME/.cache}/cliphist/thumbnails"
 cliphist_list=$(cliphist list)
 
