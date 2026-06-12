@@ -55,8 +55,8 @@ hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 --- Hardware keys (Volume, Brightness, etc.)
 --- ----------------------------------------------------------------------------
 local mediaKeys = {
-    { "XF86AudioRaiseVolume",  "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+" },
-    { "XF86AudioLowerVolume",  "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-" },
+    { "XF86AudioRaiseVolume",  "spotify-controller volume-up" },
+    { "XF86AudioLowerVolume",  "spotify-controller volume-down" },
     { "XF86AudioMute",         "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle" },
     { "XF86AudioMicMute",      "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle" },
     { "XF86MonBrightnessUp",   "brightnessctl -e4 -n2 set 5%+" },
