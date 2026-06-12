@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+thumbnail_dir="${XDG_CACHE_HOME:-$HOME/.cache}/cliphist/thumbnails"
+cliphist_list=$(cliphist list)
+
+if [ -z "$cliphist_list" ]; then
+    exit 0
+fi
+
+[ -d "$thumbnail_dir" ] || mkdir -p "$thumbnail_dir"
+
+read -r -d '' thumbnail <<EOF
+/^[0-9]+\s<meta http-equiv=/ { next }
+match(\$0, /^([0-9]+)\s(\[\[\s)?binary.*(jpg|jpeg|png|bmp)/, grp) {
+    cliphist_item_id=grp[1]
+    ext=grp[3]
+    thumbnail_file=cliphist_item_id"."ext
+    system("[ -f ${thumbnail_dir}/"thumbnail_file" ] || echo " cliphist_item_id "\\\\\t | cliphist decode >${thumbnail_dir}/"thumbnail_file)
+    print \$0"\0icon\x1f${thumbnail_dir}/"thumbnail_file
+    next
+}
+1
+EOF
+
+chosen=$(echo "$cliphist_list" | gawk "$thumbnail" | rofi -dmenu -p "📋 Clipboard" -show-icons -theme ~/.local/share/rofi/themes/clipboard.rasi)
+
+if [ -n "$chosen" ]; then
+    echo "$chosen" | cliphist decode | wl-copy
+fi

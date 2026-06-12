@@ -1,9 +1,11 @@
 --- Keybindings module
 
-local terminal    = "kitty"
-local fileManager = "thunar"
-local menu        = "rofi -show drun -theme ~/.local/share/rofi/themes/minimal.rasi"
-local mainMod     = "SUPER"
+local terminal      = "kitty"
+local fileManager   = "thunar"
+local menu          = "rofi -show drun -theme ~/.local/share/rofi/themes/minimal.rasi"
+local mainMod       = "SUPER"
+local clipboardMenu = "/home/fedox/.local/bin/cliphist-rofi" 
+
 
 --- App-Launcher & Core-Apps
 --- ----------------------------------------------------------------------------
@@ -77,3 +79,4 @@ hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = tr
 hl.bind("SUPER + SHIFT + S", hl.dsp.exec_cmd("sh -c 'hyprshot -m region -o ~/Pictures/Screenshots --raw | satty --filename -'")) -- Screenshot of selected region, saved to ~/Pictures/Screenshots and opened in satty for annotation (requires satty to be installed)
 hl.bind(mainMod .. " + H",   hl.dsp.exec_cmd("hyprpicker -a"), { locked = true }) -- Color picker
 hl.bind(mainMod .. " + period",   hl.dsp.exec_cmd("omniglyph")) -- Emoji picker (requires omniglyph to be installed)
+hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd(clipboardMenu)) -- Clipboard history menu (requires cliphist-rofi script to be installed)
