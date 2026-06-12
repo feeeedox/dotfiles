@@ -13,7 +13,7 @@ hl.bind(mainMod .. " + Q",         hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + E",         hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + R",         hl.dsp.exec_cmd("pkill rofi || " .. menu))
 hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("walset"))
-hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("/home/fedox/.config/waybar/scripts/launch.sh"))
+hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("~/.config/waybar/scripts/launch.sh"))
 
 --- Session & System controls
 --- ----------------------------------------------------------------------------
