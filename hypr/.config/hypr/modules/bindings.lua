@@ -4,7 +4,7 @@ local terminal      = "kitty"
 local fileManager   = "thunar"
 local menu          = "rofi -show drun -theme ~/.local/share/rofi/themes/minimal.rasi"
 local mainMod       = "SUPER"
-local clipboardMenu = "/home/fedox/.local/bin/cliphist-rofi" 
+local clipboardMenu = "cliphist-rofi" 
 
 
 --- App-Launcher & Core-Apps
