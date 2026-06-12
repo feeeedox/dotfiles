@@ -32,7 +32,7 @@
             "right": 5,
             "top": 2
         },
-        "source": "/home/fedox/Pictures/Fastfetch/*.png",
+        "source": "~/Pictures/Fastfetch/*.png",
         "type": "kitty-direct",
         "width": 34
     },
@@ -87,7 +87,6 @@
         {
             "format": "{size-used} / {size-total} ({size-percentage})",
             "hideFolders": [
-                "/run/media/username/externalDriveLabel",
                 "/boot"
             ],
             "key": "Disk",
