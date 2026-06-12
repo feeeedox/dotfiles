@@ -67,12 +67,12 @@ for _, cfg in ipairs(mediaKeys) do
     hl.bind(cfg[1], hl.dsp.exec_cmd(cfg[2]), { locked = true, repeating = true })
 end
 
---- Media keys for music control
+--- Media keys for spotify control (I only use them on spotify, i mean if i watch a video on youtube or something, i can always just use the controls in the video player, so i dont need the media keys to work globally for that)
 --- ----------------------------------------------------------------------------
-hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"),       { locked = true })
-hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
-hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
-hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
+hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("spotify-controller next"),       { locked = true })
+hl.bind("XF86AudioPause", hl.dsp.exec_cmd("spotify-controller toggle"), { locked = true })
+hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("spotify-controller toggle"), { locked = true })
+hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("spotify-controller prev"),   { locked = true })
 
 --- Utilities (screenshot, color picker, etc.)
 --- ----------------------------------------------------------------------------
