@@ -1,0 +1,42 @@
+#!/bin/bash
+
+DEST="org.mpris.MediaPlayer2.spotify"
+PATH_OBJ="/org/mpris/MediaPlayer2"
+INTERFACE="org.mpris.MediaPlayer2.Player"
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+if ! pgrep -x "spotify" > /dev/null; then
+    echo -e "${RED}Error: Spotify is not running.${NC}"
+    notify-send "Spotify Controller" "Error: Spotify is not running."
+    exit 1
+fi
+
+
+case "$1" in
+    play)
+        dbus-send --print-reply --dest=$DEST $PATH_OBJ $INTERFACE.Play > /dev/null
+        ;;
+    pause)
+        dbus-send --print-reply --dest=$DEST $PATH_OBJ $INTERFACE.Pause > /dev/null
+        ;;
+    toggle)
+        dbus-send --print-reply --dest=$DEST $PATH_OBJ $INTERFACE.PlayPause > /dev/null
+        ;;
+    next)
+        dbus-send --print-reply --dest=$DEST $PATH_OBJ $INTERFACE.Next > /dev/null
+        ;;
+    prev)
+        dbus-send --print-reply --dest=$DEST $PATH_OBJ $INTERFACE.Previous > /dev/null
+        ;;
+    volume-up)
+        playerctl -p spotify volume 0.05+
+        ;;
+    volume-down)
+        playerctl -p spotify volume 0.05-
+        ;;
+    *)
+        echo -e "${RED}Usage: $0 {play|pause|toggle|next|prev|volume-up|volume-down}${NC}"
+        exit 1
+        ;;
+esac
