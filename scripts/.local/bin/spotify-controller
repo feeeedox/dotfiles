@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# This script is used to control Spotify playback. 
+# Mostly used for my media-control buttons on my keyboard, because i dont want them to control the system volume when spotify is not running.
+# It uses dbus-send to send commands to Spotify's MPRIS interface, and playerctl for volume control. If Spotify is not running, it shows an error message using notify-send.    
+
 DEST="org.mpris.MediaPlayer2.spotify"
 PATH_OBJ="/org/mpris/MediaPlayer2"
 INTERFACE="org.mpris.MediaPlayer2.Player"
