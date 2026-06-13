@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <wallpaper>"
+    exit 1
+fi
+
+wallpaper="$1"
+
+notify-send "Changing Theme" "Applying new wallpaper and updating colors."
+
+matugen image "$wallpaper" --source-color-index 0
+
+notify-send "Theme Updated" "Your new wallpaper and colors have been applied."

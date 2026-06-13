@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Directory containing the wallpapers
+wallpaper_dir="$HOME/Pictures/Wallpapers"
+
+# Current directory
+cwd="$(pwd)"
+
+cd "$wallpaper_dir" || exit 1
+
+IFS=$'\n' # Set IFS to newline to handle filenames with spaces
+
+# Get the selected wallpaper using rofi
+selected_wallpaper=$(for a in *.jpg *.png *.jpeg; do echo -en "$a\0icon\x1f$a\n"; done | rofi -dmenu -p "Select" -theme "~/.local/share/rofi/themes/expanded-grid.rasi") 
+
+#
+if [ -n "$selected_wallpaper" ]; then
+    walset-backend "$selected_wallpaper"
+fi
+ 
+# Go back to the original directory
+cd "$cwd" || exit 1
