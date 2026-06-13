@@ -21,7 +21,7 @@ window {
     location:                   center;
     anchor:                     center;
     y-offset:                   0px;
-    width:                      600px; /* Leicht breiter für lange Text-Schnipsel */
+    width:                      600px;
     border:                     1px solid;
     border-radius:              15px;
     border-color:               @bg2;
@@ -70,7 +70,7 @@ entry {
 listview {
     enabled:                    true;
     columns:                    1;
-    lines:                      7; /* Etwas weniger Zeilen, da Bild-Zeilen höher sind */
+    lines:                      7; 
     cycle:                      true;
     dynamic:                    true;
     scrollbar:                  false;
@@ -92,7 +92,7 @@ listview {
 /*****----- Elements -----*****/
 element {
     enabled:                    true;
-    spacing:                    0px;        /* ← 0, nicht 12px */
+    spacing:                    0px;        
     padding:                    8px 12px;
     border:                     0px solid;
     border-radius:              10px;
