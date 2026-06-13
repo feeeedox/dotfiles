@@ -1,0 +1,167 @@
+/*****----- Configuration -----*****/
+configuration {
+	modi:                       "drun";
+    show-icons:                 true;
+    display-drun:               " Wallpapers";
+	drun-display-format:        "{name}";
+    font:                       "SF Pro Text Medium 12";
+}
+
+/*****----- Global Properties -----*****/
+@import "~/.config/rofi/launchers/shared/matugen.rasi"
+
+/*****----- Main Window -----*****/
+window {
+    transparency:                "real";
+    location:                    center;
+    anchor:                      center;
+    fullscreen:                  false;
+    width:                       1200px;
+    height:                      380px;
+    x-offset:                    0px;
+    y-offset:                    0px;
+    enabled:                     true;
+    margin:                      0px;
+    padding:                     0px;
+    border:                      1px solid;
+    border-radius:               20px;
+    border-color:                @bg2;
+    background-color:            @bg0;
+    cursor:                      "default";
+}
+
+/*****----- Main Box -----*****/
+mainbox {
+    enabled:                     true;
+    spacing:                     20px;
+    margin:                      0px;
+    padding:                     30px;
+    border:                      0px solid;
+    border-radius:               0px;
+    border-color:                @blue;
+    background-color:            transparent;
+    children:                    [ "inputbar", "listview" ];
+}
+
+/*****----- Inputbar -----*****/
+inputbar {
+    enabled:                     true;
+    spacing:                     15px;
+    margin:                      0px;
+    padding:                     15px 20px;
+    border:                      0px;
+    border-radius:               15px;
+    border-color:                @blue;
+    background-color:            @bg1;
+    text-color:                  @text;
+    children:                    [ "prompt", "entry" ];
+}
+
+prompt {
+    enabled:                     true;
+    padding:                     0px;
+    background-color:            transparent;
+    text-color:                  @blue;
+}
+
+entry {
+    enabled:                     true;
+    background-color:            transparent;
+    text-color:                  @text;
+    cursor:                      text;
+    placeholder:                 "Search wallpapers...";
+    placeholder-color:           @grey1;
+}
+
+/*****----- Listview -----*****/
+listview {
+    enabled:                     true;
+    columns:                     4;
+    lines:                       2;
+    cycle:                       true;
+    dynamic:                     true;
+    scrollbar:                   false;
+    layout:                      vertical;
+    reverse:                     false;
+    fixed-height:                true;
+    fixed-columns:               true;
+    
+    spacing:                     15px;
+    margin:                      0px;
+    padding:                     0px;
+    border:                      0px solid;
+    border-radius:               0px;
+    border-color:                @blue;
+    background-color:            transparent;
+    text-color:                  @text;
+    cursor:                      "default";
+}
+
+scrollbar {
+    handle-width:                8px;
+    handle-color:                @blue;
+    border-radius:               4px;
+    background-color:            @bg1;
+}
+
+/*****----- Elements -----*****/
+element {
+    enabled:                     true;
+    spacing:                     10px;
+    margin:                      0px;
+    padding:                     15px;
+    border:                      2px solid;
+    border-radius:               15px;
+    border-color:                transparent;
+    background-color:            @bg1;
+    text-color:                  @text;
+    orientation:                 vertical;
+    cursor:                      pointer;
+}
+
+element normal.normal {
+    background-color:            @bg1;
+    text-color:                  @text;
+    border-color:                transparent;
+}
+
+element selected.normal {
+    background-color:            @bg2;
+    text-color:                  @blue;
+    border-color:                @blue;
+}
+
+element-icon {
+    background-color:            transparent;
+    text-color:                  inherit;
+    size:                        180px;
+    cursor:                      inherit;
+    border-radius:               10px;
+}
+
+element-text {
+    background-color:            transparent;
+    text-color:                  inherit;
+    highlight:                   inherit;
+    cursor:                      inherit;
+    vertical-align:              0.5;
+    horizontal-align:            0.5;
+}
+
+/*****----- Message -----*****/
+error-message {
+    padding:                     30px;
+    border:                      0px solid;
+    border-radius:               15px;
+    border-color:                @blue;
+    background-color:            @bg0;
+    text-color:                  @text;
+}
+
+textbox {
+    background-color:            transparent;
+    text-color:                  @text;
+    vertical-align:              0.5;
+    horizontal-align:            0.5;
+    highlight:                   none;
+}

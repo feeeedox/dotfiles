@@ -1,0 +1,183 @@
+/*****----- Configuration -----*****/
+configuration {
+    show-icons:                 true;
+    font:                       "SF Pro Text 12";
+}
+
+/*****----- Global Properties -----*****/
+@import "~/.config/rofi/launchers/shared/matugen.rasi"
+
+* {
+    background-color:           transparent;
+    text-color:                 @text;
+    margin:                     0px;
+    padding:                    0px;
+    spacing:                    0px;
+}
+
+/*****----- Main Window -----*****/
+window {
+    transparency:               "real";
+    location:                   center;
+    anchor:                     center;
+    y-offset:                   0px;
+    width:                      600px; /* Leicht breiter für lange Text-Schnipsel */
+    border:                     1px solid;
+    border-radius:              15px;
+    border-color:               @bg2;
+    background-color:           @bg0;
+    cursor:                     "default";
+}
+
+/*****----- Main Box -----*****/
+mainbox {
+    enabled:                    true;
+    spacing:                    15px;
+    padding:                    20px;
+    background-color:           transparent;
+    children:                   [ "inputbar", "listview", "message" ];
+}
+
+/*****----- Inputbar -----*****/
+inputbar {
+    enabled:                    true;
+    spacing:                    10px;
+    padding:                    12px 16px;
+    border:                     2px solid;
+    border-radius:              15px;
+    border-color:               @bg3;
+    background-color:           @bg0;
+    text-color:                 @text;
+    children:                   [ "prompt", "entry" ];
+}
+
+prompt {
+    enabled:                    true;
+    background-color:           transparent;
+    text-color:                 @blue;
+}
+
+entry {
+    enabled:                    true;
+    background-color:           transparent;
+    text-color:                 @text;
+    cursor:                     text;
+    placeholder:                "Search clipboard...";
+    placeholder-color:          @grey1;
+}
+
+/*****----- Listview -----*****/
+listview {
+    enabled:                    true;
+    columns:                    1;
+    lines:                      7; /* Etwas weniger Zeilen, da Bild-Zeilen höher sind */
+    cycle:                      true;
+    dynamic:                    true;
+    scrollbar:                  false;
+    layout:                     vertical;
+    reverse:                    false;
+    fixed-height:               false;
+    fixed-columns:              true;
+    
+    spacing:                    10px;
+    margin:                     0px;
+    padding:                    0px;
+    border:                     0px solid;
+    border-radius:              0px;
+    background-color:           transparent;
+    text-color:                 @text;
+    cursor:                     "default";
+}
+
+/*****----- Elements -----*****/
+element {
+    enabled:                    true;
+    spacing:                    0px;        /* ← 0, nicht 12px */
+    padding:                    8px 12px;
+    border:                     0px solid;
+    border-radius:              10px;
+    background-color:           transparent;
+    text-color:                 @text;
+    cursor:                     pointer;
+}
+
+element normal.normal {
+    background-color:           transparent;
+    text-color:                 @text;
+}
+
+element normal.active {
+    background-color:           transparent;
+    text-color:                 @green;
+}
+
+element selected.normal {
+    background-color:           @bg2;
+    text-color:                 @blue;
+}
+
+element selected.active {
+    background-color:           @bg2;
+    text-color:                 @blue;
+}
+
+element alternate.normal {
+    background-color:           transparent;
+    text-color:                 @text;
+}
+
+element alternate.active {
+    background-color:           transparent;
+    text-color:                 @green;
+}
+
+element-icon {
+    background-color:           transparent;
+    text-color:                 inherit;
+    size:                       80px;
+    min-width:                  0px;
+    min-height:                 0px;
+    border-radius:              8px;
+    cursor:                     inherit;
+    vertical-align:             0.5;
+    expand:                     false;
+    margin:                     0px 12px 0px 0px; 
+}
+
+element-text {
+    background-color:           transparent;
+    text-color:                 inherit;
+    highlight:                  inherit;
+    cursor:                     inherit;
+    vertical-align:             0.5;
+    horizontal-align:           0.0;
+}
+
+/*****----- Message -----*****/
+message {
+    enabled:                    true;
+    margin:                     0px;
+    padding:                    0px;
+    border:                     0px solid;
+    border-radius:              0px;
+    background-color:           transparent;
+}
+
+textbox {
+    padding:                    12px;
+    border:                     0px solid;
+    border-radius:              12px;
+    border-color:               @red;
+    background-color:           @red;
+    text-color:                 @bg0;
+    vertical-align:             0.5;
+    horizontal-align:           0.0;
+}
+
+error-message {
+    padding:                    20px;
+    border:                     0px solid;
+    border-radius:              15px;
+    background-color:           @bg0;
+    text-color:                 @text;
+}

@@ -1,0 +1,92 @@
+configuration {
+  modi: "drun";
+  font: "SF Pro Text Medium 12";
+  show-icons: true;
+  icon-theme: "Papirus-dark";
+  display-drun: "";
+  drun-display-format: "{name}";
+  sidebar-mode: false;
+}
+@import "~/.config/rofi/launchers/shared/matugen.rasi"
+* {
+  bg:        @bg0;
+  fg:        @text;
+  accent:    @blue;
+  button:    @bg3;
+  background-color: @bg;
+  text-color:       @fg;
+}
+window {
+  border: 1px solid;
+  border-color: @bg2;
+  border-radius: 10px;
+  width: 80%;
+  background-color: @bg;
+  text-color: @fg;
+}
+prompt {
+  background-color: @bg1;
+  enabled: true;
+  padding: 0px 16px 0px 0px;
+  text-color: @primary;
+}
+entry {
+  placeholder: "Search...";
+  background-color: @bg1;
+  placeholder-color: @grey1;
+  expand: true;
+  padding: 0px;
+  text-color: @fg;
+}
+inputbar {
+  children: [ prompt, entry ];
+  background-color: @bg1;
+  expand: false;
+  border-radius: 8px;
+  margin: 0px;
+  padding: 10px 14px;
+  text-color: @fg;
+}
+listview {
+  columns: 6;
+  lines: 6;
+  cycle: false;
+  dynamic: true;
+  layout: vertical;
+  spacing: 8px;
+}
+mainbox {
+  children: [ inputbar, listview ];
+  spacing: 14px;
+  padding: 16px 14px 16px 14px;
+}
+element {
+  orientation: vertical;
+  padding: 6px 4px 6px 4px;
+  border-radius: 8px;
+}
+element-icon {
+  size: 120px;
+  horizontal-align: 0.5;
+  border-radius: 6px;
+}
+element-text {
+  expand: true;
+  horizontal-align: 0.5;
+  vertical-align: 0.5;
+  margin: 6px 2px 0px 2px;
+  text-color: @fg;
+  font: "SF Pro Text Medium 11";
+}
+element-text, element-icon {
+  background-color: inherit;
+  text-color: inherit;
+}
+element selected {
+  background-color: @blue;
+  border-radius: 8px;
+  text-color: @bg0;
+}
+element normal {
+  background-color: @bg1;
+}
