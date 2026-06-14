@@ -82,6 +82,13 @@ hl.window_rule({
 })
 
 hl.window_rule({
+    name    = "intellij-blur",
+    match   = { class = "jetbrains-webstorm" },
+    opacity = "0.90",
+    opaque  = false,
+})
+
+hl.window_rule({
     name    = "vesktop-blur",
     match   = { class = "vesktop" },
     opacity = "0.90",
