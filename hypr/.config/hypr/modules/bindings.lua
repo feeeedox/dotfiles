@@ -76,7 +76,7 @@ hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("spotify-controller prev"),   { locked
 
 --- Utilities (screenshot, color picker, etc.)
 --- ----------------------------------------------------------------------------
-hl.bind("SUPER + SHIFT + S", hl.dsp.exec_cmd("sh -c 'hyprshot -m region -o ~/Pictures/Screenshots --raw | satty --filename -'")) -- Screenshot of selected region, saved to ~/Pictures/Screenshots and opened in satty for annotation (requires satty to be installed)
+hl.bind("SUPER + SHIFT + S", hl.dsp.exec_cmd("sh -c 'hyprshot -m region -z -o ~/Pictures/Screenshots --raw | satty --filename - --copy-command \"wl-copy\"'"))
 hl.bind(mainMod .. " + H",   hl.dsp.exec_cmd("hyprpicker -a"), { locked = true }) -- Color picker
 hl.bind(mainMod .. " + period",   hl.dsp.exec_cmd("omniglyph")) -- Emoji picker (requires omniglyph to be installed)
 hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd(clipboardMenu)) -- Clipboard history menu (requires cliphist-rofi script to be installed)
