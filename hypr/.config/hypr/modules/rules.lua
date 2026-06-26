@@ -76,15 +76,15 @@ hl.layer_rule({
 
 hl.window_rule({
     name    = "intellij-blur",
-    match   = { class = "jetbrains-idea" },
-    opacity = "0.90",
+    match   = { class = "^jetbrains-idea.*" }, 
+    opacity = "0.90 0.80",
     opaque  = false,
 })
 
 hl.window_rule({
-    name    = "intellij-blur",
-    match   = { class = "jetbrains-webstorm" },
-    opacity = "0.90",
+    name    = "webstorm-blur",
+    match   = { class = "^jetbrains-webstorm.*" },
+    opacity = "0.90 0.80",
     opaque  = false,
 })
 
