@@ -49,3 +49,12 @@ post_hook = 'pkill swaync > /dev/null 2>&1 && swaync > /dev/null 2>&1 & disown'
 input_path = '~/.config/matugen/templates/cava.conf'
 output_path = '~/.config/cava/config'
 post_hook = 'pkill -USR1 cava || true'
+
+# VS Code matugen extension
+[templates.vscode-raw]
+input_path = './templates/vscode-colors'
+output_path = '~/.cache/matugen/vscode-colors'
+
+[templates.vscode-json]
+input_path = './templates/vscode-colors.json'
+output_path = '~/.cache/matugen/vscode-colors.json'

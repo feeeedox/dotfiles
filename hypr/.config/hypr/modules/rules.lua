@@ -95,6 +95,20 @@ hl.window_rule({
     opaque  = false,
 })
 
+hl.window_rule({
+    name    = "vscode-blur",
+    match   = { class = "code" },
+    opacity = "0.90 0.80", 
+    opaque  = false,
+})
+
+hl.window_rule({
+    name    = "vscode-url-blur",
+    match   = { class = "code-url-handler" },
+    opacity = "0.90 0.80",
+    opaque  = false,
+})
+
 hl.layer_rule({
     name     = "rofi",
     match    = { namespace = "rofi" },
