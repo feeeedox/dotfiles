@@ -89,6 +89,14 @@ hl.window_rule({
 })
 
 hl.window_rule({
+    name    = "blanket-blur",
+    match   = { namespace = "blanket" },
+    opacity = "0.90 0.80",
+    opaque  = false,
+})
+
+
+hl.window_rule({
     name    = "vesktop-blur",
     match   = { class = "vesktop" },
     opacity = "0.90",
