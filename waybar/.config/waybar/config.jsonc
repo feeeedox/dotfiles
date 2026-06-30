@@ -141,5 +141,5 @@
         "pulseaudio",
         "network",
         "custom/notification"
-    ],
+    ]
 }
