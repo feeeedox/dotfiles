@@ -72,4 +72,9 @@ output_path = '~/.cache/matugen/vscode-colors.json'
 
 [templates.vesktop]
 input_path = '~/.config/matugen/templates/midnight.theme.css'
-output_path = '~/.config/vesktop/themes/midnight.theme.css'
+output_path = '~/.config/matugen/generated/midnight.theme.css'
+post_hook   = '''
+  if command -v vesktop >/dev/null 2>&1; then
+    ln -nfs "$HOME/.config/matugen/generated/midnight.theme.css" "$HOME/.config/vesktop/themes/midnight.theme.css"
+  fi
+'''

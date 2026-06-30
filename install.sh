@@ -37,7 +37,7 @@ else
 fi
 
 PACKAGES=(
-    hyprland kitty thunar rofi-wayland
+    hyprland kitty thunar rofi-wayland stow
     cliphist wl-clipboard gawk hyprshot
     satty hyprpicker waybar awww python-pywalfox
     brightnessctl wireplumber playerctl wlogout
@@ -53,4 +53,4 @@ $HELPER -S --needed "${PACKAGES[@]}"
 
 echo ""
 success "all done!"
-echo -e "  ${DIM}restart your session to apply changes${RESET}\n"
+echo -e "  ${DIM}now run ./stow.sh to symlink the configs into your \$HOME${RESET}\n"
