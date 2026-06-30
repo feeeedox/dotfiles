@@ -123,3 +123,6 @@ tooltip label {
 #custom-notification {
     transition: all 0.3s ease-in-out;
 }
+#custom-dropdown {
+  padding: 0 10px;
+}

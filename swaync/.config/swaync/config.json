@@ -34,32 +34,32 @@
         "buttons-grid": {
             "actions": [
                 {
-                    "active": false,
+                    "active": true,
                     "command": "notify-send 'hey'",
                     "label": "󰤄",
                     "type": "toggle",
                     "update_command": "notify-send 'Hi'"
                 },
                 {
-                    "active": false,
+                    "active": true,
                     "command": "swaync-client -d",
                     "label": "",
                     "type": "toggle"
                 },
                 {
-                    "active": false,
+                    "active": true,
                     "command": "obs",
                     "label": "󰄀",
                     "type": "button"
                 },
                 {
-                    "active": false,
+                    "active": true,
                     "command": "obs",
                     "label": "󰕧",
                     "type": "button"
                 },
                 {
-                    "active": false,
+                    "active": true,
                     "command": "swaync-client -t",
                     "label": "",
                     "type": "toggle"
@@ -85,6 +85,7 @@
     "widgets": [
         "title",
         "notifications",
+        "buttons-grid",
         "mpris",
         "volume"
     ]

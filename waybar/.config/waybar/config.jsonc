@@ -125,11 +125,17 @@
         "spacing": 10,
         "show-passive-items": true
     },
+    "custom/dropdown": {
+        "format": "DROP",
+        "on-click": "ags request toggle",
+        "tooltip": false
+    },
     "layer": "top",
     "modules-left": [
         "custom/launcher",
         "clock",
-        "hyprland/workspaces"
+        "hyprland/workspaces",
+        "custom/dropdown"
     ],
     "modules-center": [
         "custom/media"

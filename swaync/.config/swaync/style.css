@@ -383,13 +383,9 @@
     color: @secondary_fixed;
 }
 
-.widget-buttons-grid > flowbox > flowboxchild > button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
 .widget-buttons-grid > flowbox > flowboxchild > button:checked {
-    background-color: rgba(128, 212, 219, 0.2);
-    border: 1px solid rgba(128, 212, 219, 0.4);
+    background-color: @primary_container;
+    border: 1px solid alpha(@primary_container, 0.5);
 }
 
 .widget-buttons-grid > flowbox > flowboxchild > button:checked label {
