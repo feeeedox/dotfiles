@@ -120,17 +120,6 @@
         "format": "󰣇",
         "on-click": "~/.config/rofi/launchers/type-7/launcher.sh",
     },
-    "power-profiles-daemon": {
-        "format": "{icon}",
-        "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
-        "tooltip": true,
-        "format-icons": {
-            "default": "",
-            "performance": "",
-            "balanced": "",
-            "power-saver": "",
-        },
-    },
     "tray": {
         "icon-size": 21,
         "spacing": 10,
@@ -143,7 +132,6 @@
         "hyprland/workspaces"
     ],
     "modules-center": [
-        "custom/notification",
         "custom/media"
     ],
     "modules-right": [
@@ -152,6 +140,6 @@
         "custom/weather",
         "pulseaudio",
         "network",
-        "power-profiles-daemon"
+        "custom/notification"
     ],
 }
