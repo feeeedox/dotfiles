@@ -78,3 +78,8 @@ post_hook   = '''
     ln -nfs "$HOME/.config/matugen/generated/midnight.theme.css" "$HOME/.config/vesktop/themes/midnight.theme.css"
   fi
 '''
+
+# todo: add ability to hot reload obsidian
+[templates.obsidian]
+input_path = "~/.config/matugen/templates/obsidian.css"
+output_path = "~/.config/matugen/generated/obsidian.css"
