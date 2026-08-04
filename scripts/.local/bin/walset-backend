@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env fish
 
-if [ "$#" -ne 1 ]; then
-    echo "Usage: $0 <wallpaper>"
+if test (count $argv) -ne 1
+    echo "Usage: $argv[0] <wallpaper>"
     exit 1
-fi
+end
 
-wallpaper="$1"
+set wallpaper $argv[1]
 
 notify-send "Changing Theme" "Applying new wallpaper and updating colors."
 
