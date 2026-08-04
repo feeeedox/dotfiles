@@ -115,7 +115,7 @@
             "format": "stopwatch"
         },
         "ClearURLs": {
-            "enabled": false
+            "enabled": true
         },
         "ClientTheme": {
             "enabled": false,
@@ -444,7 +444,7 @@
             "enabled": false
         },
         "ShowHiddenChannels": {
-            "enabled": false,
+            "enabled": true,
             "showMode": 0,
             "hideUnreads": true
         },
@@ -605,6 +605,15 @@
         },
         "MusicRichPresence": {
             "enabled": false
+        },
+        "TenorGifSearch": {
+            "enabled": true
+        },
+        "ContextMenuAPI": {
+            "enabled": true
+        },
+        "NoticesAPI": {
+            "enabled": true
         }
     },
     "uiElements": {
@@ -621,7 +630,7 @@
         "authenticated": false,
         "url": "https://api.vencord.dev/",
         "settingsSync": false,
-        "settingsSyncVersion": 1784215376920
+        "settingsSyncVersion": 1785620137340
     },
     "windowsMaterial": "none"
 }
