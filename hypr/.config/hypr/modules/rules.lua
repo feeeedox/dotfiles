@@ -37,6 +37,17 @@ hl.window_rule({
 })
 
 hl.window_rule({
+    name  = "pip-global",
+    match = {
+        title = "^Picture[ -]in[ -][Pp]icture$",
+    },
+    float  = true,
+    pin    = true,
+    size   = "640 360",
+    opaque = true,
+})
+
+hl.window_rule({
     name = "satty-floating",
     match = { class = "com.gabm.satty" },
     float = true,
