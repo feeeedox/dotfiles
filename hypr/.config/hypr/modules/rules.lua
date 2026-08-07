@@ -115,6 +115,13 @@ hl.window_rule({
 })
 
 hl.window_rule({
+    name    = "spotify-blur",
+    match   = { class = "Spotify" },
+    opacity = "0.90",
+    opaque  = false,
+})
+
+hl.window_rule({
     name    = "vscode-blur",
     match   = { class = "code" },
     opacity = "0.90 0.80", 
