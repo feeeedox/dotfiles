@@ -23,6 +23,7 @@ It combines:
 - Playlist browsing and management
 - Six color schemes plus a fully customizable palette
 - Command history with the arrow keys
+- Tab autocomplete for commands and arguments
 - Spotify-native fallback mode
 - Copy-log and hide/show controls
 
@@ -97,7 +98,13 @@ It combines:
 
 After applying the theme, open Spotify and use the SpoTUI interface directly from the client.
 Commands can be typed bare or prefixed with `/` or `.`. Use the arrow keys to walk through
-your command history, and `help` to open the command list in-app.
+your command history, `Tab` to autocomplete commands and arguments, and `help` to open the
+command list in-app.
+
+`Tab` expands a unique match (and inserts a trailing space when another argument is likely).
+With several matches it fills the shared prefix, lists candidates on the status line, and
+further `Tab` presses cycle through them — for example `th` → `theme `, then `n` → `nord`,
+or `theme s` cycling `set` / `show` / scheme ids that start with `s`.
 
 ### Playback
 

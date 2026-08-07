@@ -84,7 +84,7 @@ post_hook   = '''
 input_path = "~/.config/matugen/templates/obsidian.css"
 output_path = "~/.config/matugen/generated/obsidian.css"
 
-[templates.spotui]
-input_path = '~/.config/spicetify/Themes/SpoTUI/template.css'
-output_path = '~/.config/spicetify/Themes/SpoTUI/user.css'
+[templates.spotui2]
+input_path  = "~/.config/matugen/templates/matugen-spotui.js"
+output_path = "~/.config/spicetify/Extensions/matugen-spotui.js"
 post_hook = '~/.config/matugen/post-hook-scripts/spotify-reload.sh'

@@ -1521,6 +1521,8 @@ function createCopyButton() {
     const copyBtn = document.createElement("button");
     copyBtn.id = "copy-log-btn";
     copyBtn.className = "spotui-control-btn";
+    copyBtn.type = "button";
+    copyBtn.tabIndex = -1;
     copyBtn.textContent = "Copy log";
     copyBtn.addEventListener("click", () => {
         const output = document.getElementById("spotui-output");
@@ -1538,6 +1540,8 @@ function createCopyButton() {
     const hideBtn = document.createElement("button");
     hideBtn.id = "hide-tui-btn";
     hideBtn.className = "spotui-control-btn";
+    hideBtn.type = "button";
+    hideBtn.tabIndex = -1;
     hideBtn.textContent = "Hide TUI";
     hideBtn.addEventListener("click", () => {
         const hidden = document.body.classList.toggle("spotui-tui-hidden");
@@ -1547,6 +1551,8 @@ function createCopyButton() {
     const spotifyBtn = document.createElement("button");
     spotifyBtn.id = "enable-spotify-btn";
     spotifyBtn.className = "spotui-control-btn";
+    spotifyBtn.type = "button";
+    spotifyBtn.tabIndex = -1;
     spotifyBtn.textContent = "Enable Spotify";
     spotifyBtn.addEventListener("click", () => {
         const enabled = document.body.classList.toggle("spotui-spotify-enabled");
@@ -1571,6 +1577,8 @@ function createCopyButton() {
     const backBtn = document.createElement("button");
     backBtn.id = "spotui-back-btn";
     backBtn.className = "spotui-control-btn";
+    backBtn.type = "button";
+    backBtn.tabIndex = -1;
     backBtn.textContent = "Back";
     backBtn.addEventListener("click", () => {
         document.body.classList.remove("spotui-search-mode");
@@ -1667,11 +1675,11 @@ Type /help
 
 </div>
 <div id="spotui-panes" hidden>
-<div class="spotui-pane" id="spotui-pane-left" tabindex="0">
+<div class="spotui-pane" id="spotui-pane-left" tabindex="-1">
 <div class="spotui-pane-title"></div>
 <div class="spotui-pane-list"></div>
 </div>
-<div class="spotui-pane" id="spotui-pane-right" tabindex="0">
+<div class="spotui-pane" id="spotui-pane-right" tabindex="-1">
 <div class="spotui-pane-title"></div>
 <div class="spotui-pane-list"></div>
 </div>
@@ -1702,7 +1710,7 @@ Type /help
 </div>
 <div id="spotui-footer">
 <span class="prompt">></span>
-<input id="spotui-input" autofocus placeholder="type help for a list of commands">
+<input id="spotui-input" autofocus placeholder="type help · tab to complete">
 </div>
 `;
     document.body.appendChild(box);
@@ -1719,6 +1727,33 @@ Type /help
     }
 
     const input = document.getElementById("spotui-input");
+
+    // Capture Tab before it can move focus to control buttons / Spotify chrome.
+    box.addEventListener(
+        "keydown",
+        (e) => {
+            if (e.key !== "Tab") return;
+            if (paneMode) return;
+
+            const target = e.target;
+            if (
+                target &&
+                target !== input &&
+                (target.tagName === "INPUT" ||
+                    target.tagName === "TEXTAREA" ||
+                    target.isContentEditable)
+            ) {
+                return;
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
+            if (document.activeElement !== input) input.focus();
+            handleTabComplete(input);
+        },
+        true
+    );
+
     input.addEventListener("keydown", async (e) => {
         if (lyricsPanelOpen && e.key === "Escape") {
             e.preventDefault();
@@ -1742,6 +1777,7 @@ Type /help
         }
 
         if (e.key === "Enter") {
+            autocompleteSession = null;
             const cmd = input.value.trim();
             input.value = "";
             if (!cmd) return;
@@ -1753,14 +1789,20 @@ Type /help
 
         if (e.key === "ArrowUp") {
             e.preventDefault();
+            autocompleteSession = null;
             recallHistory(input, -1);
             return;
         }
 
         if (e.key === "ArrowDown") {
             e.preventDefault();
+            autocompleteSession = null;
             recallHistory(input, 1);
         }
+    });
+
+    input.addEventListener("input", () => {
+        autocompleteSession = null;
     });
 
 }
@@ -2094,6 +2136,250 @@ const HELP_CATEGORIES = [
 function helpEntryNames(entry) {
     const [usage, , ...aliases] = entry;
     return aliases.length ? aliases : [usage.split(/[\s<[|]/)[0]];
+}
+
+// Tab completion for the command line. Cycles matches; lists them on the status line.
+let autocompleteSession = null;
+
+function getCommandNames() {
+    const names = new Set();
+    for (const category of HELP_CATEGORIES) {
+        for (const entry of category.entries) {
+            for (const name of helpEntryNames(entry)) {
+                names.add(name);
+            }
+        }
+    }
+    return [...names].sort((a, b) => a.localeCompare(b));
+}
+
+function filterCompletions(candidates, partial) {
+    const needle = partial.toLowerCase();
+    return candidates.filter((item) => item.toLowerCase().startsWith(needle));
+}
+
+function longestCommonPrefix(items) {
+    if (!items.length) return "";
+    let prefix = items[0].toLowerCase();
+    for (let i = 1; i < items.length; i += 1) {
+        const value = items[i].toLowerCase();
+        while (prefix && !value.startsWith(prefix)) {
+            prefix = prefix.slice(0, -1);
+        }
+        if (!prefix) return "";
+    }
+    // Prefer the casing of the first match that still shares this prefix.
+    const sample = items.find((item) => item.toLowerCase().startsWith(prefix)) || items[0];
+    return sample.slice(0, prefix.length);
+}
+
+function parseCompletionInput(raw) {
+    let sigil = "";
+    let rest = raw;
+    if (rest.startsWith("/") || rest.startsWith(".")) {
+        sigil = rest[0];
+        rest = rest.slice(1);
+    }
+
+    const trailingSpace = /\s$/.test(rest);
+    const trimmedStart = rest.replace(/^\s+/, "");
+    const leading = rest.slice(0, rest.length - trimmedStart.length);
+
+    if (!trimmedStart) {
+        return { sigil, leading, kind: "command", command: null, args: [], partial: "" };
+    }
+
+    const parts = trimmedStart.split(/\s+/);
+    if (trailingSpace) {
+        return {
+            sigil,
+            leading,
+            kind: "arg",
+            command: parts[0].toLowerCase(),
+            args: parts.slice(1),
+            partial: "",
+        };
+    }
+
+    if (parts.length === 1) {
+        return {
+            sigil,
+            leading,
+            kind: "command",
+            command: null,
+            args: [],
+            partial: parts[0],
+        };
+    }
+
+    return {
+        sigil,
+        leading,
+        kind: "arg",
+        command: parts[0].toLowerCase(),
+        args: parts.slice(1, -1),
+        partial: parts[parts.length - 1],
+    };
+}
+
+function completionStub(parsed) {
+    if (parsed.kind === "command") {
+        return parsed.sigil + parsed.leading;
+    }
+    const head = [parsed.command, ...parsed.args].join(" ");
+    return parsed.sigil + parsed.leading + head + " ";
+}
+
+function getArgCompletions(command, args, partial) {
+    switch (command) {
+        case "theme": {
+            if (args.length === 0) {
+                const schemes = getAllSchemes().map((scheme) => scheme.id);
+                return filterCompletions(
+                    [...schemes, "auto", "reset", "custom", "edit", "set", "show", "get"],
+                    partial
+                );
+            }
+            if (args[0]?.toLowerCase() === "set" && args.length === 1) {
+                return filterCompletions(SCHEME_COLOR_TOKENS, partial);
+            }
+            return [];
+        }
+        case "help": {
+            if (args.length === 0) {
+                const categories = HELP_CATEGORIES.map((category) => category.id);
+                return filterCompletions([...categories, ...getCommandNames()], partial);
+            }
+            return [];
+        }
+        case "loop":
+        case "superloop":
+        case "lyrics":
+        case "bar":
+        case "mini":
+            return args.length === 0 ? filterCompletions(["on", "off"], partial) : [];
+        case "sleep":
+            return args.length === 0 ? filterCompletions(["off"], partial) : [];
+        case "bg":
+            return args.length === 0
+                ? filterCompletions(["off", "clear", "none", "opacity", "o"], partial)
+                : [];
+        case "tui":
+            if (args.length === 0) return filterCompletions(["-m"], partial);
+            if (args[0] === "-m" && args.length === 1) {
+                return filterCompletions(["command", "cli"], partial);
+            }
+            return [];
+        default:
+            return [];
+    }
+}
+
+function completionWantsSpace(parsed, match) {
+    if (parsed.kind === "command") return true;
+    if (parsed.command === "theme" && parsed.args.length === 0 && match === "set") return true;
+    if (parsed.command === "tui" && parsed.args.length === 0 && match === "-m") return true;
+    if (
+        parsed.command === "bg" &&
+        parsed.args.length === 0 &&
+        (match === "opacity" || match === "o")
+    ) {
+        return true;
+    }
+    return false;
+}
+
+function formatCompletionMatches(matches, selected) {
+    return matches
+        .map((match, index) => (index === selected ? `[${match}]` : match))
+        .join("  ");
+}
+
+function applyCompletionValue(input, value, after = "") {
+    input.value = value + after;
+    input.setSelectionRange(value.length, value.length);
+}
+
+function handleTabComplete(input) {
+    const raw = input.value;
+    if (input.selectionStart !== input.selectionEnd) return;
+
+    const caret = input.selectionStart ?? raw.length;
+    const beforeCaret = raw.slice(0, caret);
+    const afterCaret = raw.slice(caret);
+
+    if (autocompleteSession) {
+        const { stub, matches, filter } = autocompleteSession;
+        if (beforeCaret.startsWith(stub)) {
+            const token = beforeCaret.slice(stub.length);
+            if (matches.includes(token) || token === filter) {
+                const currentIndex = matches.indexOf(token);
+                const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % matches.length : 0;
+                autocompleteSession.index = nextIndex;
+                const match = matches[nextIndex];
+                const space =
+                    matches.length === 1 &&
+                    completionWantsSpace(autocompleteSession.parsed, match)
+                        ? " "
+                        : "";
+                applyCompletionValue(input, stub + match + space, afterCaret);
+                if (matches.length > 1) {
+                    setStatus(formatCompletionMatches(matches, nextIndex));
+                }
+                return;
+            }
+        }
+        autocompleteSession = null;
+    }
+
+    const parsed = parseCompletionInput(beforeCaret);
+    const matches =
+        parsed.kind === "command"
+            ? filterCompletions(getCommandNames(), parsed.partial)
+            : getArgCompletions(parsed.command, parsed.args, parsed.partial);
+
+    if (!matches.length) return;
+
+    const stub = completionStub(parsed);
+
+    // Empty token: list options without rewriting the input (avoids dumping "add" on bare Tab).
+    if (!parsed.partial && matches.length > 1) {
+        setStatus(formatCompletionMatches(matches, -1));
+        autocompleteSession = null;
+        return;
+    }
+
+    if (matches.length === 1) {
+        const match = matches[0];
+        const space = completionWantsSpace(parsed, match) ? " " : "";
+        applyCompletionValue(input, stub + match + space, afterCaret);
+        autocompleteSession = null;
+        return;
+    }
+
+    const common = longestCommonPrefix(matches);
+    if (common.length > parsed.partial.length) {
+        applyCompletionValue(input, stub + common, afterCaret);
+        setStatus(formatCompletionMatches(matches, -1));
+        autocompleteSession = {
+            stub,
+            matches,
+            filter: common,
+            index: -1,
+            parsed,
+        };
+        return;
+    }
+
+    autocompleteSession = {
+        stub,
+        matches,
+        filter: parsed.partial,
+        index: 0,
+        parsed,
+    };
+    applyCompletionValue(input, stub + matches[0], afterCaret);
+    setStatus(formatCompletionMatches(matches, 0));
 }
 
 // Resolves "help <query>" to a category, falling back to the category owning a command.

@@ -1,28 +1,3 @@
-:root {
-    /* Accent */
-    --spotui-accent: #adc6ff !important;
-    --spotui-accent-rgb: 173, 198, 255 !important;
-    --spotui-accent-light: #2b4678 !important;
-
-    /* Background & Surface */
-    --spotui-bg: #111318 !important;
-    --spotui-bg-rgb: 17, 19, 24 !important;
-    --spotui-surface: #1e1f25 !important;
-    --spotui-surface-rgb: 30, 31, 37 !important;
-
-    /* Text & Dim */
-    --spotui-text: #e2e2e9 !important;
-    --spotui-muted: #c4c6d0 !important;
-    --spotui-dim: #8e9099 !important;
-
-    /* Structure & Error */
-    --spotui-divider: #44474f !important;
-    --spotui-error: #ffb4ab !important;
-
-    /* Font */
-    --spotui-font: "JetBrains Mono", monospace;
-}
-
 .Root__main-view,
 .Root__nav-bar,
 .main-topBar-container,
