@@ -41,7 +41,7 @@ PACKAGES=(
     cliphist wl-clipboard gawk hyprshot
     satty hyprpicker waybar awww python-pywalfox
     brightnessctl wireplumber playerctl wlogout
-    swaync matugen-bin fastfetch
+    swaync matugen-bin fastfetch hyprlock
 )
 
 step "packages (${#PACKAGES[@]} total)"
