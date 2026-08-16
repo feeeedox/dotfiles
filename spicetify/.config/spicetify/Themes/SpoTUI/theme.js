@@ -1718,6 +1718,7 @@ Type /help
     renderBackdrop();
     initNowPlayingBar();
     initPanes();
+    bindQueueEvents();
     try {
         if (localStorage.getItem(LYRICS_STORAGE_KEY) === "1") {
             openLyricsPanel();
@@ -2422,7 +2423,6 @@ let popupFontCustomEditing = false;
 let popupHelpSelected = 0;
 let popupHelpCategory = null;
 let lastPlaylistContextUri = null;
-let lastQueueSnapshot = null;
 let paneMode = null;
 let paneFocus = "left";
 let paneRightLoaded = false;
@@ -5624,7 +5624,12 @@ function queueSelectedPaneTrack() {
         return;
     }
     queueTrack(track.uri)
-        .then(() => print(`Queued: ${formatTrackLabel(track)}`))
+        .then(() => {
+            print(`Queued: ${formatTrackLabel(track)}`);
+            if (paneMode === "queue") {
+                setTimeout(() => refreshQueuePanes(), 150);
+            }
+        })
         .catch((err) => print("Queue error: " + err.message, "error"));
 }
 
@@ -5693,19 +5698,50 @@ function getQueueTracks() {
     return dedupeTracks(tracks.map((track, index) => normalizeTrackItem(track, index)));
 }
 
-function openQueuePopup() {
-    const currentQueueTracks = getQueueTracks();
-    if (!lastQueueSnapshot || lastQueueSnapshot.length === 0) {
-        lastQueueSnapshot = currentQueueTracks;
-    }
-    popupTracks = lastQueueSnapshot.length ? lastQueueSnapshot : currentQueueTracks;
+function refreshQueuePanes() {
+    if (paneMode !== "queue") return;
+
+    const tracks = getQueueTracks();
+    popupTracks = tracks;
     popupTrackTitle = "Queue";
+
     const currentTrackUri = Spicetify.Player.data?.item?.uri;
-    popupTrackSelected = Math.max(findTrackIndexByUri(popupTracks, currentTrackUri), 0);
-    paneLeftItems = [{ name: `${popupTracks.length} track${popupTracks.length === 1 ? "" : "s"} in queue`, uri: null }];
+    const currentIndex = findTrackIndexByUri(popupTracks, currentTrackUri);
+    if (currentIndex >= 0) {
+        popupTrackSelected = currentIndex;
+    } else if (popupTrackSelected >= popupTracks.length) {
+        popupTrackSelected = Math.max(popupTracks.length - 1, 0);
+    }
+
+    paneLeftItems = [
+        {
+            name: `${popupTracks.length} track${popupTracks.length === 1 ? "" : "s"} in queue`,
+            uri: null,
+        },
+    ];
     popupSelected = 0;
     paneRightLoaded = true;
+    renderPanes();
+}
+
+let queueEventsBound = false;
+
+function bindQueueEvents() {
+    if (queueEventsBound || !Spicetify.Player?.addEventListener) return;
+    queueEventsBound = true;
+
+    Spicetify.Player.addEventListener("songchange", () => {
+        if (paneMode !== "queue") return;
+        refreshQueuePanes();
+        // Spicetify.Queue can lag the songchange event by a tick.
+        setTimeout(() => refreshQueuePanes(), 250);
+    });
+}
+
+function openQueuePopup() {
     openPanes("queue", "right");
+    refreshQueuePanes();
+    bindQueueEvents();
 }
 
 function initPanes() {
@@ -6002,9 +6038,6 @@ async function handlePaneKeydown(e) {
         if (track?.uri) {
             Spicetify.Player.playUri(track.uri, popupTrackContext || undefined);
             print("Playing: " + track.name);
-        }
-        if (paneMode === "queue") {
-            lastQueueSnapshot = popupTracks.slice();
         }
     }
 }
