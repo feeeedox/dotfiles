@@ -75,6 +75,25 @@
       .spotui-onboarding-theme span { color: ${accent} !important; }
       .spotui-onboarding-kicker { color: ${muted} !important; }
       .result.selected { background: ${accent} !important; color: ${bg} !important; }
+
+      .main-connectBar-connectBar,
+      .main-connectBar-connectBarInner,
+      .main-connectBar-connectBar * {
+        background: ${bg} !important;
+        background-color: ${bg} !important;
+        border-top-color: ${divider} !important;
+        color: ${text} !important;
+        fill: ${text} !important;
+      }
+      .main-connectBar-connectBar button,
+      .main-connectBar-connectBar [role="button"] {
+        color: ${accent} !important;
+        border-radius: 0 !important;
+      }
+      .main-connectBar-connectBar button:hover,
+      .main-connectBar-connectBar [role="button"]:hover {
+        color: ${text} !important;
+      }
     `;
     document.head.appendChild(style);
   }
