@@ -444,7 +444,7 @@
             "enabled": false
         },
         "ShowHiddenChannels": {
-            "enabled": true,
+            "enabled": false,
             "showMode": 0,
             "hideUnreads": true
         },
@@ -630,7 +630,7 @@
         "authenticated": false,
         "url": "https://api.vencord.dev/",
         "settingsSync": false,
-        "settingsSyncVersion": 1785620137340
+        "settingsSyncVersion": 1786975431877
     },
     "windowsMaterial": "none"
 }

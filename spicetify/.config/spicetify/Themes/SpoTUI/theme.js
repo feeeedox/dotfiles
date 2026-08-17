@@ -1115,6 +1115,8 @@ let tuiMode = "command";
 let results = [];
 let selected = 0;
 let lyricsObserver = null;
+let commandHistory = [];
+let commandHistoryIndex = -1;
 
 function injectStyle() {
     const s = document.createElement("style");
@@ -1186,8 +1188,16 @@ function applyPlayerBarColors() {
         if (bg) root.style.setProperty("--player-bar-background", bg);
         else root.style.removeProperty("--player-bar-background");
 
-        if (border) root.style.setProperty("--player-bar-border-color", border);
-        else root.style.removeProperty("--player-bar-border-color");
+        if (border) {
+            root.style.setProperty("--player-bar-border-color", border);
+            root.style.setProperty("--spotui-accent", border);
+            const rgb = border.replace("#", "").match(/.{1,2}/g)?.map((part) => parseInt(part, 16)).join(", ");
+            if (rgb) root.style.setProperty("--spotui-accent-rgb", rgb);
+        } else {
+            root.style.removeProperty("--player-bar-border-color");
+            root.style.removeProperty("--spotui-accent");
+            root.style.removeProperty("--spotui-accent-rgb");
+        }
 
         if (text) root.style.setProperty("--player-bar-text-color", text);
         else root.style.removeProperty("--player-bar-text-color");
@@ -1646,9 +1656,25 @@ function createTerminal() {
         }
         if (e.key === "Enter") {
             const cmd = input.value.trim();
+            if (cmd) {
+                commandHistory = [cmd, ...commandHistory.filter((entry) => entry !== cmd)].slice(0, 50);
+            }
+            commandHistoryIndex = -1;
             input.value = "";
             print("> " + cmd);
             await execute(cmd);
+            return;
+        }
+        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+            if (!commandHistory.length) return;
+            e.preventDefault();
+            if (e.key === "ArrowUp") {
+                if (commandHistoryIndex < commandHistory.length - 1) commandHistoryIndex += 1;
+            } else if (commandHistoryIndex >= 0) {
+                commandHistoryIndex -= 1;
+            }
+            input.value = commandHistoryIndex >= 0 ? commandHistory[commandHistoryIndex] || "" : "";
+            return;
         }
         if (e.key === "ArrowDown" && results.length) {
             selected = Math.min(selected + 1, results.length - 1);
