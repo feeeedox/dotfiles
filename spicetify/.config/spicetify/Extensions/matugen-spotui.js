@@ -6,6 +6,7 @@
   const muted   = "#c4c6d0";
   const divider = "#44474f";
 
+  // localStorage persistent setzen
   localStorage.setItem("spotui:input-bg",                    accent);
   localStorage.setItem("spotui:input-bg-hover",              surface);
   localStorage.setItem("spotui:input-text",                  bg);
@@ -102,9 +103,11 @@
     injectCSS();
   }
 
+  // Stärkerer Gradient: accent oben → text unten, kubische Kurve
   function getRowColor(row, col) {
     const totalRows = 7;
     const totalCols = 64;
+    // Nur row bestimmt den Gradient, col minimal
     const t = Math.pow(row / totalRows, 1.8) * 0.9 + (col / totalCols) * 0.1;
     const clamped = Math.min(1, Math.max(0, t));
 
@@ -118,6 +121,7 @@
     return `rgb(${Math.round(r1+(r2-r1)*clamped)},${Math.round(g1+(g2-g1)*clamped)},${Math.round(b1+(b2-b1)*clamped)})`;
   }
 
+  // Farb-Map einmal vorberechnen
   const colorMap = new Map();
 
   function buildColorMap() {
@@ -131,6 +135,7 @@
     });
   }
 
+  // MutationObserver der sofort auf jede style-Änderung reagiert
   let asciiObserver = null;
   function startAsciiObserver() {
     if (asciiObserver) return;
@@ -138,6 +143,7 @@
     if (!logo) return;
 
     asciiObserver = new MutationObserver((mutations) => {
+      // requestAnimationFrame damit wir nach der Animation-Schreiboperation kommen
       requestAnimationFrame(() => {
         mutations.forEach((m) => {
           if (m.type === "attributes" && m.attributeName === "style") {
