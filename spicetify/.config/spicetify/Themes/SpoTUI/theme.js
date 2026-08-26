@@ -1,4 +1,3 @@
-
 (function () {
 const THEME_HOST = "https://spotui.root.sx/";
 
@@ -23,6 +22,11 @@ const INPUT_BG_HOVER = "spotui:input-bg-hover";
 const INPUT_TEXT = "spotui:input-text";
 const INPUT_BORDER = "spotui:input-border";
 const INPUT_BUTTONS = "spotui:inputs-buttons";
+const PANEL_BG = "spotui:panel-bg";
+const PANEL_BORDER = "spotui:panel-border";
+const PANEL_TEXT = "spotui:panel-text";
+const UPDATE_BANNER_KEY = "spotui:update-banner";
+const DISCORD_INVITE_URL = "https://discord.gg/WTzBEKDeKg";
 const LAUNCHED_KEY = "spotui:launched";
 const FIRST_BOOT_THEME_IDS = new Set([
     "U3BvVFVJIC0gRGVmYXVsdA==",
@@ -93,9 +97,9 @@ body.spotui-onboarding-panel #spotui-logo {
     -ms-overflow-style: none;
     margin: 33vh 5vw 8px;
     height: 60vh;
-    border: 1px solid rgba(255, 140, 66, 0.3);
+    border: 1px solid var(--panel-border-color, rgba(255, 140, 66, 0.3));
     border-radius: 6px;
-    background: transparent;
+    background: var(--panel-bg-color, transparent);
 }
 
 body.spotui-onboarding-panel #spotui-onboarding-panel {
@@ -553,9 +557,9 @@ body.spotui-playlist-panel #spotui-playlist-panel {
     -ms-overflow-style: none;
     margin: 33vh 5vw 8px;
     height: 60vh;
-    border: 1px solid rgba(255, 140, 66, 0.3);
+    border: 1px solid var(--panel-border-color, rgba(255, 140, 66, 0.3));
     border-radius: 6px;
-    background: transparent;
+    background: var(--panel-bg-color, transparent);
 }
 
 body.spotui-help-panel #spotui-help-panel,
@@ -572,7 +576,7 @@ body.spotui-theme-panel #spotui-theme-panel {
 }
 
 .theme-card {
-    border: 1px solid #ff8c42;
+    border: 1px solid var(--panel-border-color, #ff8c42);
     border-radius: 4px;
     padding: 10px;
     background: rgba(0,0,0,0.5);
@@ -596,12 +600,12 @@ body.spotui-theme-panel #spotui-theme-panel {
 
 .theme-card h3 {
     margin: 10px 0 10px;
-    color: #ff8c42;
+    color: var(--panel-text-color, #ff8c42);
     font-weight: 600;
 }
 
 .theme-card button {
-    background: #ff8c42;
+    background: var(--panel-text-color, #ff8c42);
     color: #000;
     border: none;
     padding: 8px 12px;
@@ -616,9 +620,8 @@ body.spotui-theme-panel #spotui-theme-panel {
 }
 
 .theme-card button:hover {
-    background-color: #e07b39;
+    background-color: var(--panel-text-hover-color, #e07b39);
 }
-
 .help-item {
     padding: 4px 0;
     display: flex;
@@ -626,7 +629,7 @@ body.spotui-theme-panel #spotui-theme-panel {
 }
 
 .help-item .command {
-    color: #ff8c42;
+    color: var(--panel-text-color, #ff8c42);
     flex-basis: 30%;
 }
 
@@ -641,12 +644,13 @@ body.spotui-theme-panel #spotui-theme-panel {
     scrollbar-width: none;
     -ms-overflow-style: none;
     padding: 10px;
-    border: 1px solid #ff8c42;
+    border: 1px solid var(--panel-border-color, #ff8c42);
     border-radius: 4px;
+    background: var(--panel-bg-color, transparent);
 }
 
 #spotui-playlist-list legend, #spotui-song-list legend {
-    color: #ff8c42;
+    color: var(--panel-text-color, #ff8c42);
     padding: 0 5px;
 }
 
@@ -656,7 +660,7 @@ body.spotui-theme-panel #spotui-theme-panel {
 }
 
 .playlist-item.selected, .song-item.selected {
-    background: #ff8c42;
+    background: var(--panel-text-color, #ff8c42);
     color: #000;
 }
 
@@ -686,6 +690,72 @@ body.spotui-theme-panel #spotui-theme-panel {
     font-size: 16px;
     margin-bottom: 8px;
     font-weight: 600;
+}
+
+.spotui-lyrics-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 18vh 24px;
+}
+
+.spotui-lyrics-lines.spotui-lyrics-exit-active {
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+    transform: translateY(-40px);
+    opacity: 0;
+}
+
+.spotui-lyrics-lines.spotui-lyrics-enter {
+    transition: none;
+    transform: translateY(40px);
+    opacity: 0;
+}
+
+.spotui-lyrics-lines.spotui-lyrics-enter-active {
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.spotui-lyrics-fetch-loader {
+    --color-1: var(--lyrics-color-active, #ff8c42);
+    --size: 1px;
+    width: calc(8 * var(--size));
+    height: calc(40 * var(--size));
+    border-radius: calc(4 * var(--size));
+    display: block;
+    position: relative;
+    background: currentColor;
+    color: var(--color-1);
+    box-sizing: border-box;
+    animation: spotui-fetch-loader-anim 0.3s 0.3s linear infinite alternate;
+}
+.spotui-lyrics-fetch-loader::after,
+.spotui-lyrics-fetch-loader::before {
+    content: '';
+    width: calc(8 * var(--size));
+    height: calc(40 * var(--size));
+    border-radius: calc(4 * var(--size));
+    background: currentColor;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: calc(20 * var(--size));
+    box-sizing: border-box;
+    animation: spotui-fetch-loader-anim 0.3s 0.45s linear infinite alternate;
+}
+.spotui-lyrics-fetch-loader::before {
+    left: calc(-20 * var(--size));
+    animation-delay: 0s;
+}
+@keyframes spotui-fetch-loader-anim {
+    0% {
+        height: calc(48 * var(--size));
+    }
+    100% {
+        height: calc(4 * var(--size));
+    }
 }
 
 #spotui-controls {
@@ -722,6 +792,87 @@ body.spotui-tui-hidden #spotui-tui {
 			body.spotui-bar-off #spotui-tui {
 			    bottom: 0 !important;
 			}
+
+#spotui-update-banner {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    background: #000;
+    color: #ddd;
+    border: 1px solid #ff8c42;
+    border-radius: 6px;
+    padding: 20px;
+    max-width: 360px;
+    z-index: 10001;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    font-family: "JetBrains Mono", monospace;
+}
+
+.spotui-banner-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.spotui-banner-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+#spotui-update-banner h3 {
+    margin: 0;
+    color: #ff8c42;
+    font-size: 15px;
+}
+
+#spotui-update-banner p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #b3b3b3;
+}
+
+.spotui-update-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+}
+
+#banner-join-btn {
+    flex: 1;
+    text-align: center;
+    padding: 8px 16px;
+    font-weight: 600;
+}
+
+.spotui-banner-secondary-actions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 6px;
+}
+
+.spotui-banner-link-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    cursor: pointer;
+    padding: 2px 4px;
+}
+
+.spotui-banner-link-btn:hover {
+    color: #ff8c42;
+    text-decoration: underline;
+}
 `;
 
 const PROGRESS_STYLES = {
@@ -787,6 +938,8 @@ const COMMAND_LIST = [
     { cmd: "tui -inputs -bg &lt;#hex&gt; -bg-hover &lt;#hex&gt; -text &lt;#hex&gt; -border &lt;#hex&gt;", desc: "Set input colors" },
     { cmd: "tui -inputs -buttons &lt;on/off&gt;", desc: "Toggle bottom right buttons visibility" },
     { cmd: "tui -inputs off", desc: "Reset input colors" },
+    { cmd: "tui -panel -bg &lt;#hex&gt; -border &lt;#hex&gt; -text &lt;#hex&gt;", desc: "Set help/playlist/theme/about panel colors" },
+    { cmd: "tui -panel off", desc: "Reset panel colors" },
     { cmd: "playlist / list", desc: "Open playlist viewer" },
     { cmd: "play / pause / p", desc: "Toggle playback" },
     { cmd: "skip", desc: "Next track" },
@@ -800,6 +953,7 @@ const COMMAND_LIST = [
     { cmd: "search", desc: "Open Spotify search" },
     { cmd: "about", desc: "Show about panel" },
     { cmd: "theme", desc: "Browse and apply themes" },
+    { cmd: "discord", desc: "Show the Discord update banner and re-enable it on boot" },
     { cmd: "help", desc: "Show this panel" },
 ];
 
@@ -988,6 +1142,10 @@ function applyCssVar(key, cssVar) {
     else root.style.removeProperty(cssVar);
 }
 
+function isValidHexColor(value) {
+    return typeof value === "string" && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value);
+}
+
 function handleColorArgs(args, flagToKey) {
     if (args.includes("off")) {
         Object.keys(flagToKey).forEach((flag) => storageRemove(flagToKey[flag]));
@@ -995,7 +1153,9 @@ function handleColorArgs(args, flagToKey) {
     }
     Object.keys(flagToKey).forEach((flag) => {
         const idx = args.indexOf(flag);
-        if (idx !== -1) storageSet(flagToKey[flag], args[idx + 1]);
+        if (idx === -1) return;
+        const value = args[idx + 1];
+        if (isValidHexColor(value)) storageSet(flagToKey[flag], value);
     });
 }
 
@@ -1376,13 +1536,29 @@ function injectStyle() {
     document.head.appendChild(s);
 }
 
+function isVideoWallpaperUrl(url) {
+    try {
+        const clean = String(url).split("?")[0].split("#")[0];
+        return /\.(mp4|webm)$/i.test(clean);
+    } catch (e) {
+        return false;
+    }
+}
+
 function setWallpaper(url, opacity, save = true) {
     let tui = document.getElementById("spotui-tui");
     if (!tui) return;
 
+    const isVideo = isVideoWallpaperUrl(url);
     let wp = document.getElementById("spotui-wallpaper");
+
+    if (wp && ((isVideo && wp.tagName !== "VIDEO") || (!isVideo && wp.tagName === "VIDEO"))) {
+        wp.remove();
+        wp = null;
+    }
+
     if (!wp) {
-        wp = document.createElement("div");
+        wp = document.createElement(isVideo ? "video" : "div");
         wp.id = "spotui-wallpaper";
         wp.style.position = "absolute";
         wp.style.top = "0";
@@ -1390,11 +1566,47 @@ function setWallpaper(url, opacity, save = true) {
         wp.style.width = "100%";
         wp.style.height = "100%";
         wp.style.zIndex = "-1";
+        wp.style.objectFit = "cover";
         wp.style.backgroundSize = "cover";
         wp.style.backgroundPosition = "center";
+        if (isVideo) {
+            wp.muted = true;
+            wp.autoplay = true;
+            wp.loop = true;
+            wp.playsInline = true;
+            wp.controls = false;
+            wp.referrerPolicy = "no-referrer";
+            wp.setAttribute("muted", "");
+            wp.setAttribute("autoplay", "");
+            wp.setAttribute("loop", "");
+            wp.setAttribute("playsinline", "");
+            wp.setAttribute("referrerpolicy", "no-referrer");
+        }
         tui.prepend(wp);
     }
-    wp.style.backgroundImage = `url("${url}")`;
+
+    if (isVideo) {
+        if (wp.getAttribute("src") !== url) {
+            wp.src = url;
+            wp.onerror = () => {
+                console.error(
+                    "SpoTUI: wallpaper video failed to load",
+                    url,
+                    "error code:", wp.error && wp.error.code,
+                    "message:", wp.error && wp.error.message,
+                    "networkState:", wp.networkState,
+                    "readyState:", wp.readyState
+                );
+            };
+        }
+        wp.muted = true;
+        const playPromise = wp.play();
+        if (playPromise && playPromise.catch) {
+            playPromise.catch((err) => console.error("SpoTUI: wallpaper video play() rejected", err, "networkState:", wp.networkState, "readyState:", wp.readyState));
+        }
+    } else {
+        wp.style.backgroundImage = `url("${url}")`;
+    }
     wp.style.opacity = opacity;
     tui.style.backgroundColor = "transparent";
     const children = tui.querySelectorAll(':not(#spotui-wallpaper)');
@@ -1629,6 +1841,38 @@ function applyInputColors() {
     }
 }
 
+function darkenHexColor(hex, factor) {
+    const clean = hex.replace("#", "");
+    const expand = clean.length === 3 || clean.length === 4
+        ? clean.split("").map((c) => c + c).join("")
+        : clean;
+    const r = parseInt(expand.slice(0, 2), 16);
+    const g = parseInt(expand.slice(2, 4), 16);
+    const b = parseInt(expand.slice(4, 6), 16);
+    const alpha = expand.length === 8 ? expand.slice(6, 8) : "";
+    const nr = Math.max(0, Math.round(r * factor));
+    const ng = Math.max(0, Math.round(g * factor));
+    const nb = Math.max(0, Math.round(b * factor));
+    return `#${[nr, ng, nb].map((v) => v.toString(16).padStart(2, "0")).join("")}${alpha}`;
+}
+
+function applyPanelColors() {
+    try {
+        applyCssVar(PANEL_BG, "--panel-bg-color");
+        applyCssVar(PANEL_BORDER, "--panel-border-color");
+        applyCssVar(PANEL_TEXT, "--panel-text-color");
+        const root = document.documentElement;
+        const text = storageGet(PANEL_TEXT);
+        if (text && isValidHexColor(text)) {
+            root.style.setProperty("--panel-text-hover-color", darkenHexColor(text, 0.7));
+        } else {
+            root.style.removeProperty("--panel-text-hover-color");
+        }
+    } catch (e) {
+        console.error("SpoTUI: Failed to apply panel colors", e);
+    }
+}
+
 function applyInputButtonsVisibility() {
     try {
         const state = storageGet(INPUT_BUTTONS) || "on";
@@ -1799,12 +2043,12 @@ function getThemeSelectionList(themes, showAll = false) {
 function markLaunched() {
     storageSet(LAUNCHED_KEY, "1");
 }
-
 function isFirstBoot() {
     return storageGet(LAUNCHED_KEY) !== "1";
 }
 
 function closeOnboardingPanel() {
+    const wasFirstBoot = onboardingPanelOpen && onboardingStage === "done";
     onboardingPanelOpen = false;
     onboardingStage = "commands";
     onboardingShowAllThemes = false;
@@ -1814,6 +2058,7 @@ function closeOnboardingPanel() {
     const input = document.getElementById("spotui-input");
     if (input) input.focus();
     document.removeEventListener("keydown", handleGlobalEsc);
+    if (wasFirstBoot) initUpdateBanner();
 }
 
 function showRestartPopup(message = "Wait 5 seconds and relaunch Spotify", persistSession = false) {
@@ -1974,14 +2219,19 @@ function renderOnboardingFeedError(panel) {
         <div class="spotui-onboarding-copy">
             <div class="spotui-onboarding-kicker">Onboarding · stage 5</div>
             <h2>Theme feed failed.</h2>
-            <p>Try again in a moment. Launch stays locked until theme pick works.</p>
             <p>This may happen if you have been ratelimited, wait a few seconds and click the retry button below.</p>
+            <p>Or skip theme selection for now, you can pick one later with <code>theme</code>.</p>
         </div>
         <div class="spotui-onboarding-actions centered">
             <button id="spotui-onboarding-retry" class="spotui-control-btn">Retry</button>
+            <button id="spotui-onboarding-skip" class="spotui-control-btn">Skip</button>
         </div>
     `;
     document.getElementById("spotui-onboarding-retry")?.addEventListener("click", () => renderOnboardingPanel());
+    document.getElementById("spotui-onboarding-skip")?.addEventListener("click", () => {
+        onboardingStage = "done";
+        renderOnboardingPanel();
+    });
 }
 
 function applyOnboardingTheme(themeName) {
@@ -2011,6 +2261,11 @@ function applyOnboardingTheme(themeName) {
 function renderOnboardingPanel() {
     const panel = document.getElementById("spotui-onboarding-panel");
     if (!panel) return;
+
+    if (onboardingStage !== "themes") {
+        renderOnboardingStage(panel);
+        return;
+    }
 
     if (window.spotuiThemes && window.spotuiThemes.length) {
         renderOnboardingStage(panel);
@@ -2268,6 +2523,15 @@ async function execute(cmd, opts = {}) {
             applyProgressBarColors();
             return;
         }
+        if (args.includes("-panel")) {
+            handleColorArgs(args, {
+                "-bg": PANEL_BG,
+                "-border": PANEL_BORDER,
+                "-text": PANEL_TEXT,
+            });
+            applyPanelColors();
+            return;
+        }
         if (args.includes("-inputs")) {
             if (args.includes("-buttons")) {
                 const idx = args.indexOf("-buttons");
@@ -2299,9 +2563,11 @@ async function execute(cmd, opts = {}) {
         if (args[0] === "restore") {
             const fullRestore = args[1] === "-full";
             const launchedValue = storageGet(LAUNCHED_KEY);
+            const bannerValue = storageGet(UPDATE_BANNER_KEY);
             storageClear();
-            if (!fullRestore && launchedValue !== null) {
-                storageSet(LAUNCHED_KEY, launchedValue);
+            if (!fullRestore) {
+                if (launchedValue !== null) storageSet(LAUNCHED_KEY, launchedValue);
+                if (bannerValue !== null) storageSet(UPDATE_BANNER_KEY, bannerValue);
             }
             showRestartPopup("Wait 5 seconds and relaunch Spotify", true);
             setTimeout(() => location.reload(), 100);
@@ -2314,6 +2580,13 @@ async function execute(cmd, opts = {}) {
     if (command === "about") { openAboutPanel(); return; }
     if (command === "playlist" || command === "list") { openPlaylistPanel(); return; }
     if (command === "theme") { openThemePanel(); return; }
+    if (command === "discord") {
+        storageRemove(UPDATE_BANNER_KEY);
+        const existingBanner = document.getElementById("spotui-update-banner");
+        if (existingBanner) existingBanner.remove();
+        initUpdateBanner();
+        return;
+    }
 
     const playerMap = {
         play: { fn: () => { if (!Spicetify.Player.isPlaying()) Spicetify.Player.togglePlay(); }, name: "Play" },
@@ -2484,9 +2757,9 @@ async function openThemePanel() {
     loadThemeFeed(
         () => {
             const themes = window.spotuiThemes || [];
-            panel.innerHTML = `
+                panel.innerHTML = `
                 <div style="margin-bottom: 20px; display: flex;">
-                    <input id="spotui-theme-search" placeholder="Search themes..." style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid #ff8c42; border-radius: 4px; color: #ddd; padding: 8px 12px; font-family: 'JetBrains Mono', monospace; font-size: 14px;">
+                    <input id="spotui-theme-search" placeholder="Search themes..." style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--panel-border-color, #ff8c42); border-radius: 4px; color: #ddd; padding: 8px 12px; font-family: 'JetBrains Mono', monospace; font-size: 14px;">
                 </div>
                 <div class="theme-grid"></div>
             `;
@@ -2520,9 +2793,9 @@ async function openThemePanel() {
             });
         },
         () => {
-            panel.innerHTML = `
+                panel.innerHTML = `
                 <div style="margin-bottom: 20px; display: flex;">
-                     <input id="spotui-theme-search" placeholder="Search themes..." style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid #ff8c42; border-radius: 4px; color: #ddd; padding: 8px 12px; font-family: 'JetBrains Mono', monospace; font-size: 14px;" disabled>
+                     <input id="spotui-theme-search" placeholder="Search themes..." style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--panel-border-color, #ff8c42); border-radius: 4px; color: #ddd; padding: 8px 12px; font-family: 'JetBrains Mono', monospace; font-size: 14px;" disabled>
                 </div>
                 <p>¯\\_(ツ)_/¯</p><p>Error loading themes. The server may be down or you are rate-limited. Please wait and try again.</p>
             `;
@@ -2814,6 +3087,63 @@ function renderLyricsEmpty(message, detail = "") {
     els.lines.appendChild(empty);
 }
 
+function slideLyricsOut() {
+    return new Promise((resolve) => {
+        const els = getLyricsEls();
+        if (!els?.lines) { resolve(); return; }
+        const lines = els.lines;
+        lines.classList.remove("spotui-lyrics-enter", "spotui-lyrics-enter-active");
+        lines.classList.add("spotui-lyrics-exit-active");
+        let done = false;
+        const finish = (e) => {
+            if (e && e.target !== lines) return;
+            if (done) return;
+            done = true;
+            lines.removeEventListener("transitionend", finish);
+            resolve();
+        };
+        lines.addEventListener("transitionend", finish);
+        setTimeout(finish, 400);
+    });
+}
+
+function resetLyricsTransform() {
+    const els = getLyricsEls();
+    if (!els?.lines) return;
+    const lines = els.lines;
+    lines.style.transition = "none";
+    lines.classList.remove("spotui-lyrics-exit-active");
+    void lines.offsetWidth;
+    lines.style.transition = "";
+}
+
+function slideLyricsIn() {
+    const els = getLyricsEls();
+    if (!els?.lines) return;
+    const lines = els.lines;
+    lines.classList.remove("spotui-lyrics-exit-active");
+    lines.classList.add("spotui-lyrics-enter");
+    void lines.offsetWidth;
+    lines.classList.add("spotui-lyrics-enter-active");
+    setTimeout(() => {
+        lines.classList.remove("spotui-lyrics-enter", "spotui-lyrics-enter-active");
+    }, 400);
+}
+
+function renderLyricsLoading() {
+    const els = getLyricsEls();
+    if (!els?.lines) return;
+    lyricsActiveIndex = -1;
+    els.lines.classList.remove("unsynced");
+    els.lines.innerHTML = "";
+    const wrap = document.createElement("div");
+    wrap.className = "spotui-lyrics-loading";
+    const spinner = document.createElement("span");
+    spinner.className = "spotui-lyrics-fetch-loader";
+    wrap.appendChild(spinner);
+    els.lines.appendChild(wrap);
+}
+
 function renderLyricsLines(lines, synced = true) {
     const els = getLyricsEls();
     if (!els?.lines) return;
@@ -2944,16 +3274,23 @@ function setLyricsHeader(info, statusText) {
     if (els.meta) els.meta.textContent = statusText || "";
 }
 
-async function loadLyricsForCurrentTrack() {
+async function loadLyricsForCurrentTrack(isTransition = false) {
     const token = ++lyricsLoadToken;
     const info = getCurrentTrackLyricsInfo();
     const els = getLyricsEls();
     if (!els) return;
 
+    if (isTransition) {
+        await slideLyricsOut();
+        if (token !== lyricsLoadToken) return;
+        resetLyricsTransform();
+    }
+
     if (!info) {
         lyricsCache = { uri: "", lines: [], synced: false, provider: "", instrumental: false, error: "" };
         setLyricsHeader(null, "");
         renderLyricsEmpty("¯\\_(ツ)_/¯");
+        if (isTransition) slideLyricsIn();
         return;
     }
 
@@ -2962,13 +3299,18 @@ async function loadLyricsForCurrentTrack() {
         if (lyricsCache.instrumental) renderLyricsEmpty("Instrumental", "No vocals to show for this track.");
         else if (lyricsCache.error) renderLyricsEmpty("No lyrics", lyricsCache.error);
         else { renderLyricsLines(lyricsCache.lines, lyricsCache.synced); syncLyricsHighlight(true); }
+        if (isTransition) slideLyricsIn();
         return;
     }
 
     setLyricsHeader(info, "fetching…");
-    renderLyricsEmpty("¯\\_(ツ)_/¯");
+    renderLyricsLoading();
 
-    const result = await resolveTrackLyrics(info);
+    const fetchPromise = resolveTrackLyrics(info);
+    const result = isTransition
+        ? (await Promise.all([fetchPromise, sleep(1000)]))[0]
+        : await fetchPromise;
+
     if (token !== lyricsLoadToken || !lyricsPanelOpen) return;
 
     lyricsCache = {
@@ -2980,15 +3322,43 @@ async function loadLyricsForCurrentTrack() {
         error: result.error || "",
     };
 
-    if (lyricsCache.instrumental) { setLyricsHeader(info, "instrumental"); renderLyricsEmpty("¯\\_(ツ)_/¯"); return; }
-    if (!lyricsCache.lines.length) { setLyricsHeader(info, "not found"); renderLyricsEmpty("¯\\_(ツ)_/¯"); return; }
+    if (lyricsCache.instrumental) { setLyricsHeader(info, "instrumental"); renderLyricsEmpty("¯\\_(ツ)_/¯"); if (isTransition) slideLyricsIn(); return; }
+    if (!lyricsCache.lines.length) { setLyricsHeader(info, "not found"); renderLyricsEmpty("¯\\_(ツ)_/¯"); if (isTransition) slideLyricsIn(); return; }
     setLyricsHeader(info, `${lyricsCache.synced ? "synced" : "unsynced"} · ${lyricsCache.provider}`);
     renderLyricsLines(lyricsCache.lines, lyricsCache.synced);
     syncLyricsHighlight(true);
+    if (isTransition) slideLyricsIn();
 }
 
 function storeLyricsOpen(open) {
     storageSet(LYRICS_STORAGE_KEY, open ? "1" : "0");
+}
+
+function hasPlayableTrackItem() {
+    const item = Spicetify?.Player?.data?.item;
+    return Boolean(item?.uri && String(item.uri).includes(":track:"));
+}
+
+function waitForPlayerReadyThen(callback, attempt = 0) {
+    if (hasPlayableTrackItem()) {
+        callback();
+        return;
+    }
+    if (attempt >= 40) {
+        callback();
+        pollForTrackThenReload();
+        return;
+    }
+    setTimeout(() => waitForPlayerReadyThen(callback, attempt + 1), 250);
+}
+
+function pollForTrackThenReload() {
+    if (!lyricsPanelOpen) return;
+    if (hasPlayableTrackItem()) {
+        loadLyricsForCurrentTrack();
+        return;
+    }
+    setTimeout(pollForTrackThenReload, 1000);
 }
 
 function openLyricsPanel() {
@@ -3026,6 +3396,7 @@ function closeLyricsPanel() {
     if (!lyricsPanelOpen) return;
     lyricsPanelOpen = false;
     lyricsLoadToken += 1;
+    resetLyricsTransform();
     storeLyricsOpen(false);
     document.removeEventListener("keydown", handleGlobalEsc);
     const root = document.getElementById("spotui-lyrics");
@@ -3049,7 +3420,7 @@ function bindLyricsEvents() {
     Spicetify.Player.addEventListener("songchange", () => {
         if (!lyricsPanelOpen) return;
         lyricsCache = { uri: "", lines: [], synced: false, provider: "", instrumental: false, error: "" };
-        loadLyricsForCurrentTrack();
+        loadLyricsForCurrentTrack(true);
     });
 }
 
@@ -3100,6 +3471,50 @@ function resetAllSettings() {
     storageRemove(INPUT_BUTTONS);
     applyInputColors();
     applyInputButtonsVisibility();
+
+    storageRemove(PANEL_BG);
+    storageRemove(PANEL_BORDER);
+    storageRemove(PANEL_TEXT);
+    applyPanelColors();
+}
+
+function initUpdateBanner() {
+    if (document.getElementById("spotui-update-banner")) return;
+    if (storageGet(UPDATE_BANNER_KEY) === "never") return;
+
+    const banner = document.createElement("div");
+    banner.id = "spotui-update-banner";
+    banner.innerHTML = `
+        <div class="spotui-banner-secondary-actions">
+            <button id="banner-dismiss-btn" class="spotui-banner-link-btn" title="Dismiss">Dismiss</button>
+            <button id="banner-never-btn" class="spotui-banner-link-btn" title="Never show again">Never show</button>
+        </div>
+        <div class="spotui-banner-header">
+            <img class="spotui-banner-icon" src="https://raw.githubusercontent.com/SkenSMasteR/SpoTUI/refs/heads/master/assets/logo.png" alt="SpoTUI Logo">
+            <div>
+                <h3>Updates & Community</h3>
+            </div>
+        </div>
+        <p>Did you know that SpoTUI gets new updates almost every day?</p>
+        <p>Join the SpoTUI Discord server to get breakdowns of every new feature, and notifications when new updates arrive.</p>
+        <div class="spotui-update-actions">
+            <button id="banner-join-btn" class="spotui-control-btn">Join Discord</button>
+        </div>
+    `;
+    document.body.appendChild(banner);
+
+    document.getElementById("banner-join-btn").onclick = () => {
+        window.open(DISCORD_INVITE_URL, "_blank");
+    };
+
+    document.getElementById("banner-dismiss-btn").onclick = () => {
+        banner.remove();
+    };
+
+    document.getElementById("banner-never-btn").onclick = () => {
+        storageSet(UPDATE_BANNER_KEY, "never");
+        banner.remove();
+    };
 }
 
 injectStyle();
@@ -3121,6 +3536,10 @@ if (storageGet(LYRICS_ANIMATION_KEY) === "off") {
 if (Spicetify?.Platform) createTerminal();
 else setTimeout(createTerminal, 1500);
 
+if (!isFirstBoot()) {
+    setTimeout(initUpdateBanner, 1600);
+}
+
 try {
     const restartMessage = sessionStorage.getItem("spotui:restart-popup");
     if (restartMessage) {
@@ -3132,7 +3551,9 @@ setTimeout(() => { launchFirstBootIfNeeded().catch(() => {}); }, 2000);
 
 try {
     if (storageGet(LYRICS_STORAGE_KEY) === "1") {
-        setTimeout(() => openLyricsPanel(), 2000);
+        waitForPlayerReadyThen(() => {
+            if (storageGet(LYRICS_STORAGE_KEY) === "1") openLyricsPanel();
+        });
     }
     if (storageGet(WP_URL_KEY)) {
         setTimeout(() => setWallpaper(storageGet(WP_URL_KEY), storageGet(WP_OPACITY_KEY) || "1", false), 1500);
@@ -3144,6 +3565,7 @@ try {
     applyProgressBarColors();
     applyInputColors();
     applyInputButtonsVisibility();
+    applyPanelColors();
 } catch { }
 
 })();
