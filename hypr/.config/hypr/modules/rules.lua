@@ -87,10 +87,18 @@ hl.layer_rule({
 
 hl.window_rule({
     name    = "intellij-blur",
-    match   = { class = "^jetbrains-idea.*" }, 
+    match   = { class = "^jetbrains-idea.*" },
     opacity = "0.90 0.80",
     opaque  = false,
 })
+
+hl.window_rule({
+    name    = "zed-blur",
+    match   = { class = "^dev.zed.*" },
+    opacity = "0.90 0.80",
+    opaque  = false,
+})
+
 
 hl.window_rule({
     name    = "webstorm-blur",
@@ -124,7 +132,7 @@ hl.window_rule({
 hl.window_rule({
     name    = "vscode-blur",
     match   = { class = "code" },
-    opacity = "0.90 0.80", 
+    opacity = "0.90 0.80",
     opaque  = false,
 })
 

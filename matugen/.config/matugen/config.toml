@@ -88,3 +88,7 @@ output_path = "~/.config/matugen/generated/obsidian.css"
 input_path  = "~/.config/matugen/templates/matugen-spotui.js"
 output_path = "~/.config/spicetify/Extensions/matugen-spotui.js"
 post_hook = '~/.config/matugen/post-hook-scripts/spotify-reload.sh'
+
+[templates.zed]
+input_path = '~/.config/matugen/templates/zed-colors.json'
+output_path = '~/.config/zed/themes/matugen.json'
