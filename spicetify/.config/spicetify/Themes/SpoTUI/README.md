@@ -47,10 +47,20 @@ Type `help` in the SpoTUI command bar to see a list of available commands.
 | `tui bind "<Letter>" "<command>"` | Binds Alt+`<Letter>` to run a TUI command |
 | `tui unbind "<Letter>"` | Remove the Alt+<Letter> keybind |
 | `tui bind clear` | Remove all keybinds |
+| `tui actions create <name>` | Create a named action |
+| `tui actions "<name>" "<listener>" "<command>"` | Bind an action to a listener |
+| `tui actions list` | List saved actions |
+| `tui actions enable <name>` | Enable an action |
+| `tui actions disable <name>` | Disable an action |
+| `tui actions delete <name>` | Delete an action |
 | `tui -wp off` | Remove wallpaper |
 | `tui -ly -cp -active <#hex> -inactive <#hex> -near <#hex>` | Set lyrics colors |
 | `tui -ly -cp off` | Reset lyrics colors |
 | `tui -ly -animation <on/off>` | Toggle lyrics loader animation |
+| `tui -ly -spacing <value>` | Controls vertical spacing between lines in lyrics |
+| `tui -ly -spacing off` | Resets line spacing in lyrics |
+| `tui -viz -color <#hex>` | Set visualizer bar color |
+| `tui -viz off` | Reset visualizer bar color |
 | `tui -bar -bg <#hex> -border <#hex> -text <#hex>` | Set player bar colors |
 | `tui -bar -v <on/off>` | Toggle native play bar visibility |
 | `tui -bar -c <on/off>` | Toggle custom TUI play bar |
@@ -61,7 +71,7 @@ Type `help` in the SpoTUI command bar to see a list of available commands.
 | `tui -inputs -bg <#hex> -bg-hover <#hex> -text <#hex> -border <#hex>` | Set input colors |
 | `tui -inputs -buttons <on/off>` | Toggle bottom right buttons visibility |
 | `tui -inputs off` | Reset input colors |
-| `playlist` / `list` | Open playlist viewer |
+| `playlist` / `list` `<playlist-name>` | Open playlist viewer or play a specific playlist |
 | `play` / `pause` / `p` | Toggle playback |
 | `skip` | Next track |
 | `s` / `seek <mm:ss>` | Jump to a specific time |
@@ -69,10 +79,36 @@ Type `help` in the SpoTUI command bar to see a list of available commands.
 | `shuffle` | Toggle shuffle |
 | `loop` / `superloop` | Toggle repeat mode |
 | `lyrics` | Toggle lyrics panel |
-| `search` | Open Spotify's native search |
+| `visualizer` | Toggle audio visualizer |
+| `dj` | Play the DJ playlist |
+| `echo <text>` | Display a message |
+| `search <query>` | Search Spotify |
 | `theme` | Browse and apply themes |
 | `discord` | Show the Discord update banner and re-enable it on boot |
+| `standby` | Enter standby mode (any key to exit) |
 | `help` | Show the help panel |
+
+## Action Targets
+
+Actions run a command when a listener fires. Create one, then bind it:
+
+```bash
+tui actions create autolyrics
+tui actions "autolyrics" "actions:spotui@pane_close>!lyrics" "lyrics on"
+```
+
+| Target | Description |
+|--------|-------------|
+| `actions:spotui@pane_close` | Fires when any pane closes |
+| `actions:spotui@pane_close>help` | Fires when the help pane closes |
+| `actions:spotui@pane_close>about` | Fires when the about pane closes |
+| `actions:spotui@pane_close>playlist` | Fires when the playlist pane closes |
+| `actions:spotui@pane_close>theme` | Fires when the theme pane closes |
+| `actions:spotui@pane_close>lyrics` | Fires when the lyrics pane closes |
+| `actions:spotui@pane_close>search` | Fires when the search pane closes |
+| `actions:spotui@pane_close>!<pane>` | Fires when any pane except `<pane>` closes |
+| `actions:spotui@pane_close><pane> \| spotui@pane_close><pane>` | Fires when any listed pane closes |
+| `actions:spotui@pane_close>!<pane> \| spotui@pane_close>!<pane>` | Fires when the closed pane is none of the listed panes |
 
 ## Custom Play Bar Progress Styles
 
@@ -118,6 +154,15 @@ You can add your own theme to the theme browser by visiting [spotui.root.sx](htt
 **Note:** To help prevent broken themes and spam, you must sign in with GitHub to submit a theme.
 
 **Note:** Do not commit the bundled `theme.js`. All PRs with the bundled JS will be closed.
+
+---
+
+<details>
+  <summary>Stonks</summary>
+  
+[![Star History Chart](https://api.star-history.com/chart?repos=skensmaster/spotui&type=date&legend=bottom-right)](https://www.star-history.com/?repos=skensmaster%2Fspotui&type=date&legend=top-right)
+
+</details>
 
 ---
 

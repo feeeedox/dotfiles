@@ -1,6 +1,8 @@
 import { initAsciiAnimation } from "./ascii.js";
 import { execute } from "./commands.js";
-import { app } from "./state.js";
+import { COMMAND_NAMES } from "./constants.js";
+import { initSearchPanel } from "./search.js";
+import { app, isAnyPanelOpen } from "./state.js";
 
 export function setTuiMode(mode) {
     app.tuiMode = mode === "cli" ? "cli" : "command";
@@ -21,6 +23,9 @@ export function createTerminal() {
 <div class="spotui-lyrics-fade spotui-lyrics-fade-bottom"></div>
 </div>
 </div>
+<div id="spotui-dj" hidden>
+<svg class="spotui-dj-logo" viewBox="-2 -2 20 20" overflow="visible" aria-hidden="true"><path d="M7.813 14.497A6.5 6.5 0 0 1 1.5 8.016c.008-3.553 2.71-5.744 5.043-6.078.85-.121 1.288.037 1.564.246.312.238.553.639.822 1.276q.115.277.239.602c.451 1.167 1.05 2.717 2.505 3.81 1.01.76 1.46 1.529 1.592 2.209.13.679-.037 1.375-.468 2.03-.88 1.34-2.793 2.388-4.844 2.388zm-.037 1.5A8 8 0 1 0 0 8.032c0 4.34 3.464 7.87 7.776 7.965m6.666-7.124c-.358-.788-.979-1.532-1.868-2.2-1.082-.813-1.51-1.9-1.967-3.06a31 31 0 0 0-.296-.736 6.3 6.3 0 0 0-.605-1.151 6.53 6.53 0 0 1 4.39 4.01 6.5 6.5 0 0 1 .346 3.137"/></svg>
+</div>
 <div id="spotui-playlist-panel" hidden>
     <fieldset id="spotui-playlist-list">
         <legend>Playlists</legend>
@@ -28,11 +33,37 @@ export function createTerminal() {
     <fieldset id="spotui-song-list">
         <legend>Songs</legend>
     </fieldset>
+    <div id="spotui-playlist-sort" hidden></div>
+    <input id="spotui-playlist-find" hidden autocomplete="off" spellcheck="false" placeholder="search...">
+    <button id="spotui-playlist-info" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/></svg></button>
+    <div id="spotui-playlist-info-popup" hidden>Sort: press <span>o</span> · Search: press <span>s</span></div>
 </div>
-<div id="spotui-help-panel" hidden></div>
+<div id="spotui-add2list-panel" hidden>
+    <fieldset id="spotui-add2list-list">
+        <legend>Playlists</legend>
+    </fieldset>
+</div>
+<div id="spotui-queue-panel" hidden>
+    <fieldset id="spotui-queue-list">
+        <legend>Queue</legend>
+    </fieldset>
+    <button id="spotui-queue-info" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/></svg></button>
+    <div id="spotui-queue-info-popup" hidden>Play: press <span>Enter</span><br>Reorder: press <span>Tab</span><br>Remove: press <span>r</span></div>
+</div>
+<div id="spotui-help-panel" hidden><fieldset class="spotui-help-fieldset"><legend class="spotui-help-legend">Exit - Esc</legend><div class="spotui-help-content"></div></fieldset></div>
 <div id="spotui-about-panel" hidden></div>
+<div id="spotui-search-panel" hidden>
+    <div id="spotui-search-bar">
+        <span class="spotui-search-prompt">></span>
+        <input id="spotui-search-input" autocomplete="off" spellcheck="false" placeholder="type to search...">
+    </div>
+    <div id="spotui-search-results"></div>
+    <button id="spotui-search-info" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/></svg></button>
+    <div id="spotui-search-info-popup" hidden>Play: press <span>Enter</span><br>Add to playlist: press <span>a</span><br>Add to queue: press <span>q</span></div>
+</div>
 <div id="spotui-theme-panel" hidden></div>
 <div id="spotui-onboarding-panel" hidden></div>
+<canvas id="spotui-visualizer"></canvas>
 <div id="spotui-footer">
 <span class="prompt">></span>
 <input id="spotui-input" autofocus placeholder="type help for a list of commands">
@@ -40,13 +71,57 @@ export function createTerminal() {
 `;
     document.body.appendChild(box);
     initAsciiAnimation();
+    initSearchPanel();
+    [["spotui-playlist-info", "spotui-playlist-info-popup"], ["spotui-queue-info", "spotui-queue-info-popup"], ["spotui-search-info", "spotui-search-info-popup"]].forEach(([btnId, popId]) => {
+        const btn = document.getElementById(btnId);
+        const pop = document.getElementById(popId);
+        if (btn && pop) btn.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); pop.hidden = !pop.hidden; });
+    });
 
     const input = document.getElementById("spotui-input");
+
+    // Focus the command input when user starts typing
+    document.addEventListener("keydown", (e) => {
+        if (document.activeElement === input) return;
+        if (isAnyPanelOpen()) return;
+        if (e.ctrlKey || e.altKey || e.metaKey) return;
+        if (e.key.length !== 1) return;
+        input.focus();
+    });
+
+    let tabState = null;
+    let tabIndex = -1;
+
     input.addEventListener("keydown", async (e) => {
-        if (app.playlistPanelOpen || app.themePanelOpen || app.helpPanelOpen || app.aboutPanelOpen) {
+        if (isAnyPanelOpen() && !app.onboardingPanelOpen) {
             e.stopImmediatePropagation();
             return;
         }
+        if (e.key === "Tab") {
+            e.preventDefault();
+            if (!tabState) {
+                const slash = /^[/.]/.test(input.value) ? input.value[0] : "";
+                const body = slash ? input.value.slice(1) : input.value;
+                const partial = (/\S+$/.exec(body) || [""])[0];
+                if (!partial) return;
+                const head = body.slice(0, body.length - partial.length);
+                const words = head.trim().toLowerCase().split(/\s+/).filter(Boolean);
+                tabState = { slash, head, words, partial: partial.toLowerCase() };
+                tabIndex = -1;
+            }
+            const { slash, head, words, partial } = tabState;
+            const matches = [...new Set(COMMAND_NAMES
+                .map((name) => name.split(/\s+/))
+                .filter((cmd) => cmd.length > words.length
+                    && words.every((word, i) => cmd[i] === word)
+                    && cmd[words.length].startsWith(partial))
+                .map((cmd) => cmd[words.length]))];
+            if (!matches.length) return;
+            tabIndex = (tabIndex + 1) % matches.length;
+            input.value = slash + head + matches[tabIndex];
+            return;
+        }
+        tabState = null;
         if (e.key === "Enter") {
             const cmd = input.value.trim();
             if (cmd) {

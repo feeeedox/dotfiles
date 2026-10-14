@@ -37,7 +37,7 @@
             "enabled": true
         },
         "MessagePopoverAPI": {
-            "enabled": false
+            "enabled": true
         },
         "MessageUpdaterAPI": {
             "enabled": true
@@ -284,7 +284,8 @@
             "ignoreGuilds": "",
             "logEdits": true,
             "logDeletes": true,
-            "inlineEdits": true
+            "inlineEdits": true,
+            "logDeletedAttachments": true
         },
         "MoreQuickReactions": {
             "enabled": false
@@ -377,7 +378,7 @@
             "enabled": false
         },
         "PlatformIndicators": {
-            "enabled": true,
+            "enabled": false,
             "list": true,
             "badges": true,
             "messages": true,
@@ -592,7 +593,9 @@
             "enabled": false
         },
         "WebKeybinds": {
-            "enabled": true
+            "enabled": true,
+            "showNavigationButtons": true,
+            "overrideCommonKeybinds": true
         },
         "WebScreenShareFixes": {
             "enabled": true
@@ -606,14 +609,21 @@
         "MusicRichPresence": {
             "enabled": false
         },
-        "TenorGifSearch": {
-            "enabled": true
-        },
         "ContextMenuAPI": {
             "enabled": true
         },
         "NoticesAPI": {
             "enabled": true
+        },
+        "AddAttachments": {
+            "enabled": false
+        },
+        "FixDiscordCss": {
+            "enabled": true
+        },
+        "GifProviderSwitcher": {
+            "enabled": true,
+            "provider": "klipy"
         }
     },
     "uiElements": {
@@ -630,7 +640,8 @@
         "authenticated": false,
         "url": "https://api.vencord.dev/",
         "settingsSync": false,
-        "settingsSyncVersion": 1786975431877
+        "settingsSyncVersion": 1791565284142
     },
-    "windowsMaterial": "none"
+    "windowsMaterial": "none",
+    "nativeTitleBar": false
 }

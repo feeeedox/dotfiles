@@ -1,5 +1,6 @@
-import { ANIMATION_KEY, CUSTOM_BAR_ENABLED, CUSTOM_BAR_PROGRESS_STYLE, HEX_COLOR_REGEX, INPUT_BG, INPUT_BG_HOVER, INPUT_BORDER, INPUT_BUTTONS, INPUT_TEXT, LYRICS_COLOR_ACTIVE, LYRICS_COLOR_INACTIVE, LYRICS_COLOR_LIGHT_INACTIVE, PANEL_BG, PANEL_BORDER, PANEL_TEXT, PLAYER_BAR_BG, PLAYER_BAR_BORDER, PLAYER_BAR_TEXT, PLAYER_BAR_VISIBLE, PROGRESS_BAR_BG, PROGRESS_BAR_FG, PROGRESS_STYLES, WP_OPACITY_KEY, WP_URL_KEY } from "./constants.js";
-import { syncLyricsState } from "./lyrics.js";
+import { ANIMATION_KEY, CUSTOM_BAR_ENABLED, CUSTOM_BAR_PROGRESS_STYLE, HEX_COLOR_REGEX, INPUT_BG, INPUT_BG_HOVER, INPUT_BORDER, INPUT_BUTTONS, INPUT_TEXT, LYRICS_COLOR_ACTIVE, LYRICS_COLOR_INACTIVE, LYRICS_COLOR_LIGHT_INACTIVE, LYRICS_LINE_SPACING, PANEL_BG, PANEL_BORDER, PANEL_TEXT, PLAYER_BAR_BG, PLAYER_BAR_BORDER, PLAYER_BAR_TEXT, PLAYER_BAR_VISIBLE, PROGRESS_BAR_BG, PROGRESS_BAR_FG, PROGRESS_STYLES, VISUALIZER_COLOR, WP_OPACITY_KEY, WP_URL_KEY } from "./constants.js";
+import { handleLyricsCommand, syncLyricsState } from "./lyrics.js";
+import { enterStandby } from "./standby.js";
 import { app } from "./state.js";
 import { storageGet, storageRemove, storageSet } from "./storage.js";
 import { createButton } from "./utils.js";
@@ -39,6 +40,18 @@ export function applyLyricColors() {
     } catch (e) {
         console.error("SpoTUI: Failed to apply lyric colors", e);
     }
+}
+
+export function applyLyricLineSpacing() {
+	try {
+		applyCssVar(LYRICS_LINE_SPACING, "--lyrics-line-spacing");
+	} catch (e) {
+		console.error("SpoTUI: Failed to apply line spacing", e);
+	}
+}
+
+export function applyVisualizerColor() {
+    applyCssVar(VISUALIZER_COLOR, "--visualizer-color");
 }
 
 // Apply stored player bar color preferences from localStorage
@@ -191,6 +204,12 @@ export async function updateCustomBar() {
         const volEl = document.createElement("div");
         volEl.className = "spotui-custom-bar-vol";
         volEl.textContent = `Vol: ${Math.round(volume * 100)}%`;
+        volEl.addEventListener("wheel", (e) => {
+            e.preventDefault();
+            const cur = Spicetify.Player.getVolume();
+            const delta = e.deltaY < 0 ? 0.05 : -0.05;
+            Spicetify.Player.setVolume(Math.max(0, Math.min(1, cur + delta)));
+        }, { passive: false });
         const right = document.createElement("div");
         right.className = "spotui-custom-bar-right";
         right.appendChild(volEl);
@@ -307,42 +326,53 @@ export function applyInputButtonsVisibility() {
         console.error("SpoTUI: Failed to apply input buttons visibility", e);
     }
 }
-// Create control buttons - Hide TUI, Enable Spotify, Back
+// Create control buttons - Lyrics, Enable Spotify, Back
 export function createControlButtons() {
     const controls = document.createElement("div");
     controls.id = "spotui-controls";
     const state = storageGet(INPUT_BUTTONS) || "on";
     controls.style.display = state === "off" ? "none" : "flex";
 
-    const hideBtn = createButton("hide-tui-btn", "spotui-control-btn", "Hide TUI", () => {
-        const hidden = document.body.classList.toggle("spotui-tui-hidden");
-        hideBtn.textContent = hidden ? "Show TUI" : "Hide TUI";
+    const lyricsBtn = createButton("lyrics-btn", "spotui-control-btn", "Lyrics", () => {
+        handleLyricsCommand();
     });
+
+    const placeBackBtn = () => {
+        const nav = document.querySelector(".main-globalNav-historyButtonsWrapper");
+        if (nav && backBtn.parentElement !== nav) nav.appendChild(backBtn);
+    };
 
     const spotifyBtn = createButton("enable-spotify-btn", "spotui-control-btn", "Enable Spotify", () => {
         const enabled = document.body.classList.toggle("spotui-spotify-enabled");
         if (enabled) {
             document.body.classList.add("spotui-tui-hidden");
-            hideBtn.textContent = "Show TUI";
             spotifyBtn.textContent = "Disable Spotify";
+            placeBackBtn();
         } else {
             spotifyBtn.textContent = "Enable Spotify";
             document.body.classList.remove("spotui-tui-hidden");
             document.body.classList.remove("spotui-search-mode");
-            hideBtn.textContent = "Hide TUI";
         }
     });
 
-    controls.appendChild(hideBtn);
+    const standbyBtn = createButton("standby-btn", "spotui-control-btn spotui-standby-btn", "", () => {
+        enterStandby();
+    });
+    standbyBtn.setAttribute("aria-label", "Standby");
+    standbyBtn.title = "Standby";
+    standbyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M1 3.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5M8 6a.5.5 0 0 1 .5.5v5.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 .708-.708L7.5 12.293V6.5A.5.5 0 0 1 8 6"/></svg>`;
+
+    controls.appendChild(lyricsBtn);
     controls.appendChild(spotifyBtn);
+    controls.appendChild(standbyBtn);
     (document.getElementById("spotui-footer") || document.body).appendChild(controls);
 
     const backBtn = createButton("spotui-back-btn", "spotui-control-btn", "Back", () => {
         document.body.classList.remove("spotui-search-mode", "spotui-spotify-enabled", "spotui-tui-hidden");
         spotifyBtn.textContent = "Enable Spotify";
-        hideBtn.textContent = "Hide TUI";
         syncLyricsState();
     });
+    backBtn.type = "button";
     document.body.appendChild(backBtn);
 }
 // Toggle ASCII logo visibility
@@ -375,6 +405,12 @@ export function resetAllSettings() {
     storageRemove(LYRICS_COLOR_INACTIVE);
     storageRemove(LYRICS_COLOR_LIGHT_INACTIVE);
     applyLyricColors();
+
+    storageRemove(LYRICS_LINE_SPACING);
+    applyLyricLineSpacing();
+
+    storageRemove(VISUALIZER_COLOR);
+    applyVisualizerColor();
 
     storageRemove(PLAYER_BAR_BG);
     storageRemove(PLAYER_BAR_BORDER);

@@ -1,13 +1,22 @@
+import { emitPaneClose } from "./actions.js";
 import { resetAllSettings } from "./appearance.js";
 import { execute } from "./commands.js";
 import { ADD_THEME_IMG_ERR, ADD_THEME_IMG_OK, COMMAND_LIST } from "./constants.js";
-import { isBindCommand } from "./keybinds.js";
+import { isRestrictedThemeCommand } from "./keybinds.js";
 import { closeLyricsPanel } from "./lyrics.js";
 import { closeOnboardingPanel } from "./onboarding.js";
-import { getPlaylists, handlePlaylistPanelKeydown, renderPlaylistPanel } from "./playlists.js";
+import { getPlaylists, handlePlaylistPanelKeydown, renderPlaylistListVirtual, renderPlaylistPanel } from "./playlists.js";
+import { closeQueuePanel } from "./queue.js";
+import { closeSearchPanel } from "./search.js";
 import { app } from "./state.js";
 import { print } from "./terminal.js";
 import { createAddThemeCard, createThemeCard, loadThemeFeed } from "./themes.js";
+
+const PANE_TARGETS = {
+    helpPanelOpen: "help",
+    aboutPanelOpen: "about",
+    themePanelOpen: "theme",
+};
 
 // Global Escape key handler - closes active panels
 export function handleGlobalEsc(e) {
@@ -26,12 +35,26 @@ export function closeActivePanel() {
     if (app.aboutPanelOpen) setPanelState("spotui-about-panel", "spotui-about-panel", "aboutPanelOpen", false);
     if (app.lyricsPanelOpen) closeLyricsPanel();
     if (app.playlistPanelOpen) closePlaylistPanel();
+    if (app.add2listPanelOpen) closeAdd2listPanel();
+    if (app.queuePanelOpen) closeQueuePanel();
     if (app.themePanelOpen) closeThemePanel();
+    if (app.searchPanelOpen) closeSearchPanel();
     if (app.onboardingPanelOpen) closeOnboardingPanel();
+    if (app.djPanelOpen) {
+        const root = document.getElementById("spotui-dj");
+        app.djPanelOpen = false;
+        app.djPrevPane = null;
+        if (root) {
+            root.classList.remove("spotui-dj-active");
+            root.hidden = true;
+        }
+        document.body.classList.remove("spotui-dj-panel");
+    }
 }
 
 // Generic panel state manager
 export function setPanelState(panelId, className, openVarName, targetState) {
+    const wasOpen = Boolean(app[openVarName]);
     const panels = {
         'helpPanelOpen': () => app.helpPanelOpen = targetState,
         'aboutPanelOpen': () => app.aboutPanelOpen = targetState,
@@ -49,6 +72,7 @@ export function setPanelState(panelId, className, openVarName, targetState) {
     }
     if (targetState) document.addEventListener("keydown", handleGlobalEsc);
     else document.removeEventListener("keydown", handleGlobalEsc);
+    if (!targetState && wasOpen) emitPaneClose(PANE_TARGETS[openVarName] || "");
 }
 
 // Open or toggle help panel
@@ -59,9 +83,12 @@ export function openHelpPanel() {
     setPanelState("spotui-help-panel", "spotui-help-panel", "helpPanelOpen", true);
     const panel = document.getElementById("spotui-help-panel");
     if (panel) {
-        panel.innerHTML = COMMAND_LIST.map(
-            item => `<div class="help-item"><span class="command">${item.cmd}</span><span class="description">${item.desc}</span></div>`
-        ).join('');
+        const content = panel.querySelector('.spotui-help-content');
+        if (content) {
+            content.innerHTML = COMMAND_LIST.map(
+                item => `<div class="help-item"><span class="command">${item.cmd}</span><span class="description">${item.desc}</span></div>`
+            ).join('');
+        }
     }
 }
 
@@ -83,13 +110,24 @@ export function openAboutPanel() {
 }
 
 export function closePlaylistPanel() {
+    const wasOpen = app.playlistPanelOpen;
     app.playlistPanelOpen = false;
+    app.playlistSortOpen = false;
+    app.playlistFindOpen = false;
+    app.playlistFindQuery = "";
     document.body.classList.remove("spotui-playlist-panel");
+    const sortMenu = document.getElementById("spotui-playlist-sort");
+    if (sortMenu) sortMenu.hidden = true;
+    const findInput = document.getElementById("spotui-playlist-find");
+    if (findInput) { findInput.hidden = true; findInput.value = ""; }
+    const infoPopup = document.getElementById("spotui-playlist-info-popup");
+    if (infoPopup) infoPopup.hidden = true;
     const panel = document.getElementById("spotui-playlist-panel");
     if (panel) panel.hidden = true;
     const input = document.getElementById("spotui-input");
     if (input) input.focus();
     document.removeEventListener("keydown", handlePlaylistPanelKeydown);
+    if (wasOpen) emitPaneClose("playlist");
 }
 
 // Open playlist panel and load users playlists
@@ -98,7 +136,8 @@ export async function openPlaylistPanel() {
     closeActivePanel();
 
     try {
-        app.playlists = await getPlaylists();
+        app.playlists = (await getPlaylists()).filter((p) => p.name !== "DJ");
+        app.playlistsDefault = app.playlists.slice();
     } catch (err) {
         print("Playlist error: " + err.message);
         return;
@@ -120,11 +159,53 @@ export async function openPlaylistPanel() {
     document.addEventListener("keydown", handlePlaylistPanelKeydown);
 }
 
+export function closeAdd2listPanel() {
+    const wasOpen = app.add2listPanelOpen;
+    app.add2listPanelOpen = false;
+    app.add2listTrackUri = null;
+    document.body.classList.remove("spotui-add2list-panel");
+    const panel = document.getElementById("spotui-add2list-panel");
+    if (panel) panel.hidden = true;
+    const input = document.getElementById("spotui-input");
+    if (input) input.focus();
+    document.removeEventListener("keydown", handlePlaylistPanelKeydown);
+    if (wasOpen) emitPaneClose("add2list");
+}
+
+export async function openAdd2listPanel(trackUri = null) {
+    if (app.add2listPanelOpen) { closeAdd2listPanel(); return; }
+    // When triggering add2list from search, the panes switch. And we dont want something like autolyrics to trigger at the same time as the add2list pane.
+    if (app.searchPanelOpen) closeSearchPanel({ silent: true });
+    else closeActivePanel();
+
+    try {
+        app.playlists = (await getPlaylists()).filter((p) => p.name !== "DJ" && !p.isLikedSongs);
+    } catch (err) {
+        print("Playlist error: " + err.message);
+        return;
+    }
+
+    app.add2listPanelOpen = true;
+    app.add2listTrackUri = trackUri;
+    document.body.classList.add("spotui-add2list-panel");
+    const panel = document.getElementById("spotui-add2list-panel");
+    if (panel) panel.hidden = false;
+
+    const input = document.getElementById("spotui-input");
+    if (input) input.blur();
+
+    app.selectedPlaylist = 0;
+    app.activePane = 'playlist';
+
+    renderPlaylistListVirtual();
+    document.addEventListener("keydown", handlePlaylistPanelKeydown);
+}
+
 export function closeThemePanel() {
     setPanelState("spotui-theme-panel", "spotui-theme-panel", "themePanelOpen", false);
 }
 
-// Open theme browser panel (with search and theme cards)
+// Open theme browser panel
 export async function openThemePanel() {
     if (app.themePanelOpen) { closeThemePanel(); return; }
     closeActivePanel();
@@ -168,7 +249,7 @@ export async function openThemePanel() {
                 if (e.target.tagName === 'BUTTON' && e.target.dataset.commands) {
                     resetAllSettings();
                     const commands = JSON.parse(e.target.dataset.commands);
-                    commands.forEach(cmd => { if (!isBindCommand(cmd)) execute(cmd); });
+                    commands.forEach(cmd => { if (!isRestrictedThemeCommand(cmd)) execute(cmd, { fromTheme: true }); });
                     closeThemePanel();
                 }
             });

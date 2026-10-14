@@ -10,6 +10,9 @@ export const WP_OPACITY_KEY = "spotui:wp-opacity";
 export const LYRICS_COLOR_ACTIVE = "spotui:lyrics-color-active";
 export const LYRICS_COLOR_INACTIVE = "spotui:lyrics-color-inactive";
 export const LYRICS_COLOR_LIGHT_INACTIVE = "spotui:lyrics-color-light-inactive";
+export const LYRICS_LINE_SPACING = "spotui:lyrics-line-spacing";
+export const VISUALIZER_STORAGE_KEY = "spotui:visualizer-open";
+export const VISUALIZER_COLOR = "spotui:visualizer-color";
 export const PLAYER_BAR_BG = "spotui:player-bar-bg";
 export const PLAYER_BAR_BORDER = "spotui:player-bar-border";
 export const PLAYER_BAR_TEXT = "spotui:player-bar-text";
@@ -35,14 +38,15 @@ export const JAM_POLL_MS = 1000;
 export const JAM_SEEK_DRIFT_MS = 400; // Tolerated position drift before forcing seek
 
 export const KEYBIND_STORAGE_KEY = "spotui:keybinds";
+export const ACTIONS_STORAGE_KEY = "spotui:actions";
 export const DISCORD_INVITE_URL = "https://discord.gg/WTzBEKDeKg";
 export const LAUNCHED_KEY = "spotui:launched";
 
 // Theme IDs shown in first-boot onboarding
 export const FIRST_BOOT_THEME_IDS = new Set([
     "U3BvVFVJIC0gRGVmYXVsdA==",
-    "UmFuZG9tIGFuaW1lIHRoZW1l",
-    "SURL",
+    "SGlyb2tpIEthd2FuYWJlIC0gU3RvcmU=",
+    "UmVkIEF1dHVtbiBSb25pbiAtIExpdmUgV2FsbHBhcGVy",
 ]);
 // Progress bar styles for custom player bar
 export const PROGRESS_STYLES = {
@@ -90,6 +94,7 @@ export const ORANGE_PALETTE_RGB = [
 // Validation and parsing patterns
 export const HEX_COLOR_REGEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 export const BIND_CMD_REGEX = /^tui\s+(bind|unbind)\b/i;
+export const THEME_SKIP_CMD_REGEX = /^(?:tui\s+(?:bind|unbind|actions|restore)\b|jam\b)/i;
 export const F_KEY_REGEX = /^f\d{1,2}$/i; // Match F1-F12
 export const LRC_STAMP_REGEX = /\[(\d{1,2}):(\d{2}(?:\.\d+)?)\]/g; // LRC timestamp [mm:ss.ms]
 export const LRC_STAMP_STRIP_REGEX = /\[\d{1,2}:\d{2}(?:\.\d+)?\]/g;
@@ -109,9 +114,19 @@ export const COMMAND_LIST = [
     { cmd: 'tui bind "&lt;Letter&gt;" "&lt;command&gt;"', desc: "Bind Alt+&lt;Letter&gt; to run a TUI command" },
     { cmd: 'tui unbind "&lt;Letter&gt;"', desc: "Remove the Alt+&lt;Letter&gt; keybind" },
     { cmd: "tui bind clear", desc: "Remove all keybinds" },
+    { cmd: "tui actions create &lt;name&gt;", desc: "Create a named action" },
+    { cmd: "tui actions &lt;name&gt; &lt;listener&gt; &lt;command&gt;", desc: "Bind an action to a listener" },
+    { cmd: "tui actions list", desc: "List saved actions" },
+    { cmd: "tui actions enable &lt;name&gt;", desc: "Enable an action" },
+    { cmd: "tui actions disable &lt;name&gt;", desc: "Disable an action" },
+    { cmd: "tui actions delete &lt;name&gt;", desc: "Delete an action" },
     { cmd: "tui -ly -cp -active &lt;#hex&gt; -inactive &lt;#hex&gt; -near &lt;#hex&gt;", desc: "Set lyrics colors" },
     { cmd: "tui -ly -cp off", desc: "Reset lyrics colors" },
     { cmd: "tui -ly -animation &lt;on/off&gt;", desc: "Toggle lyrics loader animation" },
+    { cmd: "tui -ly -spacing &lt;value&gt;", desc: "Controls vertical spacing between lines in lyrics" },
+    { cmd: "tui -ly -spacing off", desc: "Resets line spacing in lyrics" },
+    { cmd: "tui -viz -color &lt;#hex&gt;", desc: "Set visualizer bar color" },
+    { cmd: "tui -viz off", desc: "Reset visualizer bar color" },
     { cmd: "tui -bar -bg &lt;#hex&gt; -border &lt;#hex&gt; -text &lt;#hex&gt;", desc: "Set player bar colors" },
     { cmd: "tui -bar -v &lt;on/off&gt;", desc: "Toggle play bar visibility" },
     { cmd: "tui -bar -c &lt;on/off&gt;", desc: "Toggle custom TUI play bar" },
@@ -124,7 +139,9 @@ export const COMMAND_LIST = [
     { cmd: "tui -inputs off", desc: "Reset input colors" },
     { cmd: "tui -panel -bg &lt;#hex&gt; -border &lt;#hex&gt; -text &lt;#hex&gt;", desc: "Set help/playlist/theme/about panel colors" },
     { cmd: "tui -panel off", desc: "Reset panel colors" },
-    { cmd: "playlist / list", desc: "Open playlist viewer" },
+    { cmd: "playlist / list &lt;playlist-name&gt;", desc: "Open playlist viewer or play a specific playlist" },
+    { cmd: "add2list", desc: "Add the current song to a playlist" },
+    { cmd: "queue", desc: "View and reorder the play queue" },
     { cmd: "play / pause / p", desc: "Toggle playback" },
     { cmd: "skip", desc: "Next track" },
     { cmd: "back", desc: "Previous track" },
@@ -134,12 +151,20 @@ export const COMMAND_LIST = [
     { cmd: "loop / superloop", desc: "Toggle repeat mode" },
     { cmd: "like", desc: "Like/unlike current song" },
     { cmd: "lyrics", desc: "Toggle lyrics panel" },
-    { cmd: "search", desc: "Open Spotify search" },
+    { cmd: "visualizer", desc: "Toggle audio visualizer" },
+    { cmd: "dj", desc: "Play the DJ playlist" },
+    { cmd: "echo &lt;text&gt;", desc: "Display a message" },
+    { cmd: "search &lt;query&gt;", desc: "Search Spotify" },
     { cmd: "about", desc: "Show about panel" },
     { cmd: "theme", desc: "Browse and apply themes" },
+    { cmd: "standby", desc: "Enter standby mode (any key to exit)" },
     { cmd: "discord", desc: "Show the Discord update banner and re-enable it on boot" },
     { cmd: "jam create", desc: "Start a listening jam and get a PIN" },
     { cmd: "jam join <pin>", desc: "Join a jam by PIN (volume/lyrics only)" },
     { cmd: "jam leave", desc: "Leave the current jam" },
     { cmd: "help", desc: "Show this panel" },
 ];
+
+export const COMMAND_NAMES = [...new Set(COMMAND_LIST.flatMap(({ cmd }) =>
+    cmd.replace(/(?:&lt;|<).*$/, "").split(" / ").map((name) => name.replace(/[\["\s]+$/, ""))
+))].filter(Boolean).sort();

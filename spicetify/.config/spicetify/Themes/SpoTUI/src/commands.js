@@ -1,15 +1,22 @@
-import { applyCustomBarState, applyInputButtonsVisibility, applyInputColors, applyLyricColors, applyPanelColors, applyPlayerBarColors, applyPlayerBarVisibility, applyProgressBarColors, handleColorArgs, toggleLogo, updateCustomBar } from "./appearance.js";
+import { handleActionsCommand } from "./actions.js";
+import { applyCustomBarState, applyInputButtonsVisibility, applyInputColors, applyLyricColors, applyPanelColors, applyPlayerBarColors, applyPlayerBarVisibility, applyProgressBarColors, applyLyricLineSpacing, applyVisualizerColor, handleColorArgs, toggleLogo, updateCustomBar } from "./appearance.js";
 import { resetGrid } from "./ascii.js";
 import { initUpdateBanner, showRestartPopup } from "./banner.js";
-import { ANIMATION_KEY, CUSTOM_BAR_ENABLED, CUSTOM_BAR_PROGRESS_STYLE, INPUT_BG, INPUT_BG_HOVER, INPUT_BORDER, INPUT_BUTTONS, INPUT_TEXT, KEYBIND_STORAGE_KEY, LAUNCHED_KEY, LYRICS_ANIMATION_KEY, LYRICS_COLOR_ACTIVE, LYRICS_COLOR_INACTIVE, LYRICS_COLOR_LIGHT_INACTIVE, PANEL_BG, PANEL_BORDER, PANEL_TEXT, PLAYER_BAR_BG, PLAYER_BAR_BORDER, PLAYER_BAR_TEXT, PLAYER_BAR_VISIBLE, PROGRESS_BAR_BG, PROGRESS_BAR_FG, PROGRESS_STYLES, UPDATE_BANNER_KEY, WP_OPACITY_KEY, WP_URL_KEY } from "./constants.js";
+import { ACTIONS_STORAGE_KEY, ANIMATION_KEY, CUSTOM_BAR_ENABLED, CUSTOM_BAR_PROGRESS_STYLE, INPUT_BG, INPUT_BG_HOVER, INPUT_BORDER, INPUT_BUTTONS, INPUT_TEXT, KEYBIND_STORAGE_KEY, LAUNCHED_KEY, LYRICS_ANIMATION_KEY, LYRICS_COLOR_ACTIVE, LYRICS_COLOR_INACTIVE, LYRICS_COLOR_LIGHT_INACTIVE, LYRICS_LINE_SPACING, PANEL_BG, PANEL_BORDER, PANEL_TEXT, PLAYER_BAR_BG, PLAYER_BAR_BORDER, PLAYER_BAR_TEXT, PLAYER_BAR_VISIBLE, PROGRESS_BAR_BG, PROGRESS_BAR_FG, PROGRESS_STYLES, UPDATE_BANNER_KEY, VISUALIZER_COLOR, WP_OPACITY_KEY, WP_URL_KEY } from "./constants.js";
 import { getAllowedJamGuestCommands, jamCreate, jamJoin, jamLeave, jamSay } from "./jam.js";
-import { getKeybinds, saveKeybinds, stripCommandPrefix } from "./keybinds.js";
-import { handleLyricsCommand, syncLyricsHighlight, syncLyricsState } from "./lyrics.js";
+import { getKeybinds, isRestrictedThemeCommand, saveKeybinds, stripCommandPrefix } from "./keybinds.js";
+import { handleLyricsCommand, syncLyricsHighlight } from "./lyrics.js";
+import { handleVisualizerCommand } from "./visualizer.js";
 import { getAllowedOnboardingCommands } from "./onboarding.js";
-import { openAboutPanel, openHelpPanel, openPlaylistPanel, openThemePanel } from "./panels.js";
+import { openAboutPanel, closeActivePanel, openHelpPanel, openPlaylistPanel, openAdd2listPanel, openThemePanel } from "./panels.js";
+import { closeQueuePanel, openQueuePanel } from "./queue.js";
+import { getPlaylists } from "./playlists.js";
+import { openSearchPanel } from "./search.js";
 import { app } from "./state.js";
 import { storageClear, storageGet, storageRemove, storageSet } from "./storage.js";
 import { applyThemeByName } from "./themes.js";
+import { enterStandby } from "./standby.js";
+import { playFresh } from "./utils.js";
 import { setWallpaper } from "./wallpaper.js";
 
 export async function execute(cmd, opts = {}) {
@@ -17,12 +24,14 @@ export async function execute(cmd, opts = {}) {
     const [rawCommand, ...args] = cleanedCmd.split(/\s+/);
     const command = (rawCommand || "").toLowerCase();
     const argText = args.join(" ").trim();
+    if (opts.fromTheme && isRestrictedThemeCommand(cleanedCmd)) return;
+
     const allowedOnboardingCommands = opts.bypassOnboarding ? null : getAllowedOnboardingCommands();
     if (allowedOnboardingCommands && !allowedOnboardingCommands.has(command)) return;
 
     const allowedJamCommands = getAllowedJamGuestCommands();
     if (allowedJamCommands && !allowedJamCommands.has(command)) {
-        jamSay("Commands limited to: `volume`, `lyrics`, `jam leave`");
+        jamSay("Commands limited to: `volume`, `lyrics`, `visualizer`, `jam leave`");
         return;
     }
 
@@ -102,6 +111,10 @@ export async function execute(cmd, opts = {}) {
             }
             return;
         }
+        if (argsLower[0] === "actions") {
+            handleActionsCommand(cleanedCmd);
+            return;
+        }
         if (argsLower.includes("-ly") && argsLower.includes("-cp")) {
             handleColorArgs(args, {
                 "-active": LYRICS_COLOR_ACTIVE,
@@ -109,6 +122,11 @@ export async function execute(cmd, opts = {}) {
                 "-near": LYRICS_COLOR_LIGHT_INACTIVE,
             });
             applyLyricColors();
+            return;
+        }
+        if (argsLower.includes("-viz")) {
+            handleColorArgs(args, { "-color": VISUALIZER_COLOR });
+            applyVisualizerColor();
             return;
         }
         if (argsLower.includes("-ly") && argsLower.includes("-animation")) {
@@ -125,6 +143,20 @@ export async function execute(cmd, opts = {}) {
                 syncLyricsHighlight(true);
             }
             return;
+        }
+        if (argsLower.includes("-ly") && argsLower.includes("-spacing")) {
+        	const idx = argsLower.indexOf("-spacing");
+        	let value = args[idx + 1];
+        	if ((value || "").toLowerCase() === "off") {
+        		storageRemove(LYRICS_LINE_SPACING);
+        	} else {
+				if (!isNaN(value)) {
+					value = value + "px";	
+				}
+        		storageSet(LYRICS_LINE_SPACING, value);
+        	}
+        	applyLyricLineSpacing();
+        	return;
         }
         if (argsLower.includes("-bar")) {
             if (argsLower.includes("-v")) {
@@ -219,11 +251,13 @@ export async function execute(cmd, opts = {}) {
             const launchedValue = storageGet(LAUNCHED_KEY);
             const bannerValue = storageGet(UPDATE_BANNER_KEY);
             const keybindsValue = storageGet(KEYBIND_STORAGE_KEY);
+            const actionsValue = storageGet(ACTIONS_STORAGE_KEY);
             storageClear();
             if (!fullRestore) {
                 if (launchedValue !== null) storageSet(LAUNCHED_KEY, launchedValue);
                 if (bannerValue !== null) storageSet(UPDATE_BANNER_KEY, bannerValue);
                 if (keybindsValue !== null) storageSet(KEYBIND_STORAGE_KEY, keybindsValue);
+                if (actionsValue !== null) storageSet(ACTIONS_STORAGE_KEY, actionsValue);
             }
             showRestartPopup("Wait 5 seconds and relaunch Spotify", true);
             setTimeout(() => location.reload(), 100);
@@ -232,9 +266,37 @@ export async function execute(cmd, opts = {}) {
         return;
     }
 
+    if (command === "standby") { closeActivePanel(); await enterStandby(); return; }
     if (command === "help") { openHelpPanel(); return; }
     if (command === "about") { openAboutPanel(); return; }
-    if (command === "playlist" || command === "list") { openPlaylistPanel(); return; }
+    if (command === "playlist" || command === "list") { 
+        if (argText) {
+            try {
+                app.playlists = await getPlaylists();
+            } catch (err) {
+                jamSay("Playlist error: " + err.message);
+                return;
+            }
+
+            const match = app.playlists.filter(p => p.name.toLowerCase().includes(argText.toLowerCase()));
+            if (match.length === 1) {
+                await playFresh(match[0].uri);
+                return;
+            } else if (match.length > 1) {
+                jamSay("Multiple matches: " + match.map(p => p.name).join(", "));
+                return;
+            }
+        }
+
+        openPlaylistPanel(); return; 
+    }
+    if (command === "add2list") { openAdd2listPanel(); return; }
+    if (command === "queue") {
+        if (app.queuePanelOpen) { closeQueuePanel(); return; }
+        closeActivePanel();
+        openQueuePanel();
+        return;
+    }
     if (command === "theme") { openThemePanel(); return; }
     if (command === "discord") {
         storageRemove(UPDATE_BANNER_KEY);
@@ -261,8 +323,8 @@ export async function execute(cmd, opts = {}) {
     }
 
     if (command === "search") {
-        document.body.classList.add("spotui-search-mode", "spotui-tui-hidden");
-        syncLyricsState();
+        closeActivePanel();
+        openSearchPanel(argText);
         return;
     }
 
@@ -289,6 +351,26 @@ export async function execute(cmd, opts = {}) {
     if (command === "loop") { handleRepeatCommand("loop", argText); return; }
     if (command === "superloop") { handleRepeatCommand("superloop", argText); return; }
     if (command === "lyrics") { handleLyricsCommand(argText); return; }
+    if (command === "visualizer") { handleVisualizerCommand(argText); return; }
+    if (command === "dj") {
+        try {
+            app.playlists = await getPlaylists();
+            const match = app.playlists.find((p) => p.name === "DJ");
+            if (!match) {
+                jamSay("Spotify DJ isn’t available for your account yet.");
+                return;
+            }
+            await playFresh(match.uri);
+        } catch (err) {
+            jamSay("Spotify DJ isn’t available for your account yet.");
+        }
+        return;
+    }
+
+    if (command === "echo") {
+        if (argText) jamSay(argText);
+        return;
+    }
 
     if (command === "jam") {
         const sub = (args[0] || "").toLowerCase();
