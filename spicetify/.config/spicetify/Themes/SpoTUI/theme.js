@@ -249,9 +249,11 @@
         playlistFindSource: []
     };
 
+    const PANEL_OPEN_KEYS = Object.keys(app).filter(k => k.endsWith("PanelOpen") && k !== "lyricsPanelOpen");
+
     // Returns true if any panel except lyrics or standby is open
     function isAnyPanelOpen() {
-        return app.standbyOpen || Object.keys(app).some(k => k.endsWith("PanelOpen") && k !== "lyricsPanelOpen" && app[k]);
+        return app.standbyOpen || PANEL_OPEN_KEYS.some(k => app[k]);
     }
 
     function storageGet(key) {
@@ -396,6 +398,9 @@
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
         ctx.fontVariantCaps = "normal";
+        ctx.shadowBlur = 6;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
         const chars = app.asciiCharData;
         for (let i = 0; i < chars.length; i += 1) {
             const { el, row, col } = chars[i];
@@ -404,9 +409,6 @@
             const color = el.style.color;
             ctx.fillStyle = color;
             ctx.shadowColor = color;
-            ctx.shadowBlur = 6;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
             ctx.fillText(ch, pad + col * asciiDraw.cellW, pad + row * asciiDraw.cellH);
         }
     }
@@ -1263,6 +1265,7 @@
     }
 
     const SEARCH_DEBOUNCE_MS = 250;
+    const AUTOCOMPLETE_TYPE_RE = /autocomplete/i;
 
     function resolveName(data) {
         const candidates = [
@@ -1292,7 +1295,7 @@
 
     function isAutocompleteEntry(entry, data) {
         const types = [entry?.item?.__typename, data?.__typename, entry?.__typename];
-        return types.some((type) => typeof type === "string" && /autocomplete/i.test(type));
+        return types.some((type) => typeof type === "string" && AUTOCOMPLETE_TYPE_RE.test(type));
     }
 
     function extractResults(searchV2) {
@@ -1756,30 +1759,11 @@
                 input.value = app.commandHistoryIndex >= 0 ? app.commandHistory[app.commandHistoryIndex] || "" : "";
                 return;
             }
-            if (e.key === "ArrowDown" && app.results.length) {
-                app.selected = Math.min(app.selected + 1, app.results.length - 1);
-                renderResults();
-            }
-            if (e.key === "ArrowUp" && app.results.length) {
-                app.selected = Math.max(app.selected - 1, 0);
-                renderResults();
-            }
         });
     }
 
     // Placeholder print function (output is handled differently now)
     function print(text) {}
-
-    function renderResults() {
-        const output = document.getElementById("spotui-output");
-        output.textContent = "";
-        app.results.forEach((item, idx) => {
-            const line = document.createElement("div");
-            line.className = "result" + (idx === app.selected ? " selected" : "");
-            line.textContent = `${idx + 1}. ${item.name}${item.artist ? " - " + item.artist : ""}`;
-            output.appendChild(line);
-        });
-    }
 
     const PLAYLIST_SONGS_FETCH_DELAY = 150;
 
@@ -2886,9 +2870,6 @@
 
     // Render current onboarding stage content
     function renderOnboardingStage(panel) {
-        const themes = getThemeSelectionList(window.spotuiThemes || [], app.onboardingShowAllThemes);
-        const themeCards = themes.map(onboardingThemeCard);
-
         if (app.onboardingStage === "commands") {
             panel.innerHTML = `
             <div class="spotui-onboarding-stage">
@@ -2916,6 +2897,8 @@
                 renderOnboardingPanel();
             });
         } else if (app.onboardingStage === "themes") {
+            const themes = getThemeSelectionList(window.spotuiThemes || [], app.onboardingShowAllThemes);
+            const themeCards = themes.map(onboardingThemeCard);
             panel.innerHTML = `
             <div class="spotui-onboarding-stage">
                 <div class="spotui-onboarding-copy">
@@ -3295,6 +3278,16 @@
         }
     }
 
+    const playerMap = {
+        play: { fn: () => { if (!Spicetify.Player.isPlaying()) Spicetify.Player.togglePlay(); }, name: "Play" },
+        pause: { fn: () => { if (Spicetify.Player.isPlaying()) Spicetify.Player.togglePlay(); }, name: "Pause" },
+        p: { fn: () => { const p = Spicetify.Player.isPlaying(); Spicetify.Player.togglePlay(); return p; }, name: "Play/PauseToggle" },
+        skip: { fn: () => Spicetify.Player.next(), name: "Skip" },
+        back: { fn: () => Spicetify.Player.back(), name: "Back" },
+        shuffle: { fn: () => { const s = Spicetify.Player.getShuffle(); Spicetify.Player.setShuffle(!s); return s; }, name: "Shuffle" },
+        like: { fn: async () => { const h = await Spicetify.Player.getHeart(); await Spicetify.Player.toggleHeart(); return h; }, name: "Like" }
+    };
+
     async function execute(cmd, opts = {}) {
         const cleanedCmd = stripCommandPrefix(cmd);
         const [rawCommand, ...args] = cleanedCmd.split(/\s+/);
@@ -3554,7 +3547,8 @@
                     return;
                 }
 
-                const match = app.playlists.filter(p => p.name.toLowerCase().includes(argText.toLowerCase()));
+                const query = argText.toLowerCase();
+                const match = app.playlists.filter(p => p.name.toLowerCase().includes(query));
                 if (match.length === 1) {
                     await playFresh(match[0].uri);
                     return;
@@ -3581,16 +3575,6 @@
             initUpdateBanner();
             return;
         }
-
-        const playerMap = {
-            play: { fn: () => { if (!Spicetify.Player.isPlaying()) Spicetify.Player.togglePlay(); }, name: "Play" },
-            pause: { fn: () => { if (Spicetify.Player.isPlaying()) Spicetify.Player.togglePlay(); }, name: "Pause" },
-            p: { fn: () => { const p = Spicetify.Player.isPlaying(); Spicetify.Player.togglePlay(); return p; }, name: "Play/PauseToggle" },
-            skip: { fn: () => Spicetify.Player.next(), name: "Skip" },
-            back: { fn: () => Spicetify.Player.back(), name: "Back" },
-            shuffle: { fn: () => { const s = Spicetify.Player.getShuffle(); Spicetify.Player.setShuffle(!s); return s; }, name: "Shuffle" },
-            like: { fn: async () => { const h = await Spicetify.Player.getHeart(); await Spicetify.Player.toggleHeart(); return h; }, name: "Like" }
-        };
 
         if (playerMap[command]) {
             const act = playerMap[command];
@@ -4029,9 +4013,10 @@
     // Tries exact match first, then searches by closest duration
     async function fetchLrclibLyrics(info) {
         const headers = { "Lrclib-Client": "SpoTUI (https://github.com/SkenS/SpoTUI)" };
+        const artistName = info.artist.split(",")[0].trim();
         const exactParams = new URLSearchParams({
             track_name: info.title,
-            artist_name: info.artist.split(",")[0].trim(),
+            artist_name: artistName,
             album_name: info.album || info.title,
             duration: String(info.durationSec || 0),
         });
@@ -4046,7 +4031,7 @@
         try {
             const searchParams = new URLSearchParams({
                 track_name: info.title,
-                artist_name: info.artist.split(",")[0].trim(),
+                artist_name: artistName,
             });
             const searchRes = await fetch(`https://lrclib.net/api/search?${searchParams}`, { headers });
             if (!searchRes.ok) return null;
@@ -4176,7 +4161,7 @@
         const GAP_THRESHOLD = 8000;
         const LYRIC_DURATION_ESTIMATE = 2000;
 
-        if (synced && lines.length > 0 && lines[0].startTime > 3000) {
+        if (synced && lines[0].startTime > 3000) {
             const startLoader = document.createElement("div");
             startLoader.className = "spotui-lyrics-loader";
             startLoader.dataset.gapStart = "0";
@@ -4210,7 +4195,7 @@
             }
         });
 
-        if (synced && lines.length > 0) {
+        if (synced) {
             const lastLine = lines[lines.length - 1];
             const lastLineEnd = lastLine.startTime + LYRIC_DURATION_ESTIMATE;
             const endLoader = document.createElement("div");
@@ -4263,15 +4248,15 @@
         if (!force && next === app.lyricsActiveIndex && !useLoader && !loaderStateChanged) return;
 
         const rows = app.cachedLyricsRows;
-        const allElements = Array.from(els.lines.children);
 
         if (useLoader) {
-            const activeLoader = loaders[activeLoaderIndex];
-            const loaderPosition = allElements.indexOf(activeLoader);
+            const allElements = Array.from(els.lines.children);
+            const elementIndex = new Map(allElements.map((el, i) => [el, i]));
+            const positionOf = (el) => elementIndex.has(el) ? elementIndex.get(el) : -1;
+            const loaderPosition = positionOf(loaders[activeLoaderIndex]);
 
             rows.forEach((row) => {
-                const rowPosition = allElements.indexOf(row);
-                const distance = Math.abs(rowPosition - loaderPosition);
+                const distance = Math.abs(positionOf(row) - loaderPosition);
                 row.classList.remove("active");
                 row.classList.toggle("near", distance === 1);
             });
@@ -4716,10 +4701,6 @@
             window.addEventListener("resize", updateCustomBarWidth);
         } else {
             document.body.classList.remove("spotui-custom-bar-on");
-            if (window.spotuiCustomBarInterval) {
-                clearInterval(window.spotuiCustomBarInterval);
-                delete window.spotuiCustomBarInterval;
-            }
             window.removeEventListener("resize", updateCustomBarWidth);
         }
     }
@@ -5039,6 +5020,9 @@
         "zLbWoHarv2xIIoERVTb9",
         "uf2x5WzM1lLLCLSQdMFB",
         "tDwxpCRHu3TEG0d_5KfE",
+        "SW7Ebfzvld30ve5zrter",
+        "vVF0gCDG9l8RCOK3_2kw",
+        "Root__globalNav",
     ];
 
     const HIDDEN_UI_MARKER = "spotui-hidden-ui";
@@ -5089,10 +5073,10 @@
         "main-entityHeader-background": [],
         "main-entityHeader-overlay": [],
         "main-globalNav-browseButtonWrapper": [],
-        "main-globalNav-contentRight": ["J69QIsElFMg5kJWeEOxw"],
-        "main-globalNav-historyButtons": ["ie2Qo9PCf8p3rBbip9Hv"],
-        "main-globalNav-historyButtonsWrapper": ["AwxHJjdqrlr_clQipYln"],
-        "main-globalNav-navLink": ["oGrojYscaY3uU8Hy86FD", "T_cPbNTFfdOMoMku2Wc_"],
+        "main-globalNav-contentRight": ["J69QIsElFMg5kJWeEOxw", "fOO2fIo3u1dllKA1PpsE"],
+        "main-globalNav-historyButtons": ["ie2Qo9PCf8p3rBbip9Hv", "Tpe_EXbFoHioEukq1L3y"],
+        "main-globalNav-historyButtonsWrapper": ["AwxHJjdqrlr_clQipYln", "GwGB43JbSV5e0q7q_6sj"],
+        "main-globalNav-navLink": ["oGrojYscaY3uU8Hy86FD", "T_cPbNTFfdOMoMku2Wc_", "tJNs6e3G6zxX78DnJY6T"],
         "main-globalNav-searchInputContainer": [],
         "main-globalNav-searchInputText": [],
         "main-globalNav-searchInputWrapper": [],
@@ -5101,28 +5085,28 @@
         "main-home-homeHeader": [],
         "main-lyricsCinema-container": [],
         "main-lyricsCinema-content": [],
-        "main-nowPlayingBar-center": ["rSRNVahRTJPSREItfKbj"],
-        "main-nowPlayingBar-container": ["main-nowPlayingBar-nowPlayingBar", "cW4mdx7MbdsSDVOh4yFl"],
-        "main-nowPlayingBar-extraControls": ["oqNKUl1wM7vavZeQ2s1V"],
-        "main-nowPlayingBar-left": ["hvPltcX1Of4QRX6ymIPO"],
-        "main-nowPlayingBar-lyricsButton": ["Tc4NZwap8qQOlHonxDWz", "OCDVdnseqXwal5Tk2fM8"],
-        "main-nowPlayingBar-nowPlayingBar": ["cW4mdx7MbdsSDVOh4yFl"],
-        "main-nowPlayingBar-right": ["P7V7BLPw5oupbrDHSbT_"],
+        "main-nowPlayingBar-center": ["rSRNVahRTJPSREItfKbj", "g1JESJMcieNsGs8YA91M"],
+        "main-nowPlayingBar-container": ["main-nowPlayingBar-nowPlayingBar", "cW4mdx7MbdsSDVOh4yFl", "qEDMggbdvFQOvRAwmrIT"],
+        "main-nowPlayingBar-extraControls": ["oqNKUl1wM7vavZeQ2s1V", "vQrn40NmmpeUfmOfgxeo"],
+        "main-nowPlayingBar-left": ["hvPltcX1Of4QRX6ymIPO", "Xaz3TDhhjakUcSaES5TR"],
+        "main-nowPlayingBar-lyricsButton": ["Tc4NZwap8qQOlHonxDWz", "OCDVdnseqXwal5Tk2fM8", "NmfW_y2jYByYTRtCmPaB"],
+        "main-nowPlayingBar-nowPlayingBar": ["cW4mdx7MbdsSDVOh4yFl", "iuUVHEu5S9rRkc0zz0Hq"],
+        "main-nowPlayingBar-right": ["P7V7BLPw5oupbrDHSbT_", "kUn_OZBjLN9zTu7bcgSg"],
         "main-nowPlayingView-lyricsContent": [],
         "main-nowPlayingView-lyricsControls": [],
         "main-nowPlayingView-lyricsGradient": [],
         "main-nowPlayingView-lyricsTitle": [],
-        "main-nowPlayingView-section": ["oA2xvck_WSZn6mRFcZ2J","RdD6POf8qaaGutBtUyMh"],
+        "main-nowPlayingView-section": ["oA2xvck_WSZn6mRFcZ2J","RdD6POf8qaaGutBtUyMh", "iHJ6_yPvPOWhaNcXElNZ"],
         "main-shelf-shelfGrid": [],
         "main-topBar-background": [],
         "main-topBar-overlay": [],
         "main-topBar-searchBar": [],
         "main-topBar-withBackgroundBlur": [],
-        "main-trackInfo-artists": ["iQ71jAm3u73Al0XZj90v", "yPuQIWyOhCzYrdC7hhfw"],
-        "main-trackInfo-container": ["main-nowPlayingWidget-nowPlaying", "XQslIrb_llPUT81TqFnT"],
-        "main-trackInfo-contentContainer": ["_HN_yndimvPzsIkzzSvo", "nuY09VyDMngWeD4AGX2H"],
-        "main-trackInfo-contentWrapper": ["_HN_yndimvPzsIkzzSvo", "nuY09VyDMngWeD4AGX2H"],
-        "main-trackInfo-name": ["iSkZ_HES6ks1CnyZfh46", "UxJZcpiOpOv5I0B1Tjdw"],
+        "main-trackInfo-artists": ["iQ71jAm3u73Al0XZj90v", "yPuQIWyOhCzYrdC7hhfw", "pJWbyyFi7zAnwrlWlNr8"],
+        "main-trackInfo-container": ["main-nowPlayingWidget-nowPlaying", "XQslIrb_llPUT81TqFnT", "nH2R2U626Rdlv05YEt09"],
+        "main-trackInfo-contentContainer": ["_HN_yndimvPzsIkzzSvo", "nuY09VyDMngWeD4AGX2H", "tUoHgXvEUCxKvXSJQmH9"],
+        "main-trackInfo-contentWrapper": ["_HN_yndimvPzsIkzzSvo", "nuY09VyDMngWeD4AGX2H", "tUoHgXvEUCxKvXSJQmH9"],
+        "main-trackInfo-name": ["iSkZ_HES6ks1CnyZfh46", "UxJZcpiOpOv5I0B1Tjdw", "d3jICfEdIPzHv0kyDFHZ"],
         "main-trackList-trackListRow": [],
         "main-view-container__scroll-node": [],
         "main-yourLibraryX-libraryContainer": [],
@@ -5155,23 +5139,23 @@
         "notistack-SnackbarContainer": [],
         "os-viewport": [],
         "playlist-playlist-playlistContent": [],
-        "progress-bar": ["Nd6cUzZDlHX30QzhnExg"],
+        "progress-bar": ["Nd6cUzZDlHX30QzhnExg", "f42lbbUT05gjuREF86Hw"],
         "queue-queuePage-header": [],
         "Root": [],
-        "Root__now-playing-bar": ["z0qdvwslOFVOAihShLIq", "L5dM7nzQpMJtRkvZZBZL"], // If the play/pause button clips out of the playbar, this mapping needs to be updated
+        "Root__now-playing-bar": ["z0qdvwslOFVOAihShLIq", "L5dM7nzQpMJtRkvZZBZL", "XvuTwlgQRqJ5NnVLN9ZH"], // If the play/pause button clips out of the playbar, this mapping needs to be updated
         "Root__top-container": [],
         "search-modal-searchBar": [],
         "searchbar-bar": [],
         "uFQUpbITgGovaKRr6I_g": [], // page header
-        "volume-bar": ["main-nowPlayingBar-volumeBar", "VIXZppPJeWhMxFseNCgy"],
-        "volume-bar__icon-button": ["vM_Y7OPWespPewrOb1uN", "w1XCHDijYLIJuVCEkQID"],
-        "volume-bar__slider-container": ["d2AW7kxQkljoKbqyHvHC", "GN9SlMTfgQeqy7opGRSA"],
-        "x-progressBar-fillColor": ["aZtKYi6r4EG1_WHGpmn9"],
-        "x-progressBar-handle": ["pKZTLhZq37S3mH2TFw4X", "GQiIgNkmZw4cDZnpvnGN"],
-        "x-progressBar-progressBar": ["progress-bar", "Nd6cUzZDlHX30QzhnExg"],
-        "x-progressBar-progressBarBg": ["SKxg0dANYkUKs2sk0q6e"],
+        "volume-bar": ["main-nowPlayingBar-volumeBar", "VIXZppPJeWhMxFseNCgy", "w6STr1NJYa2jHvg2wfCa"],
+        "volume-bar__icon-button": ["vM_Y7OPWespPewrOb1uN", "w1XCHDijYLIJuVCEkQID", "pBXkugh_Qs4OAeaVaTi9"],
+        "volume-bar__slider-container": ["d2AW7kxQkljoKbqyHvHC", "GN9SlMTfgQeqy7opGRSA", "GRePaldGFb3UeyjULrVd"],
+        "x-progressBar-fillColor": ["aZtKYi6r4EG1_WHGpmn9", "ISEJ4fISQcRgNTF5dVAA"],
+        "x-progressBar-handle": ["pKZTLhZq37S3mH2TFw4X", "GQiIgNkmZw4cDZnpvnGN", "dvBeolJPafPPVKB6Bj2F"],
+        "x-progressBar-progressBar": ["progress-bar", "Nd6cUzZDlHX30QzhnExg", "f42lbbUT05gjuREF86Hw"],
+        "x-progressBar-progressBarBg": ["SKxg0dANYkUKs2sk0q6e", "a5aI123LVia29JOBdk0K"],
         "x-progressBar-progressFillColor": [],
-        "x-progressBar-sliderArea": ["PLraRYLMXymk2zPhyNnL"],
+        "x-progressBar-sliderArea": ["PLraRYLMXymk2zPhyNnL", "wDpjbPLJt_10QvIanfC0"],
         "x-searchInput-searchInputClearButton": [],
         "x-searchInput-searchInputClearIcon": [],
         "x-searchInput-searchInputInput": [],
@@ -6591,22 +6575,23 @@ body.spotui-standby .Root__now-playing-bar {
         return "#" + [m[1], m[2], m[3]].map((n) => Number(n).toString(16).padStart(2, "0")).join("");
     }
 
-    function cssVar(name, fallback) {
-        return toHex(getComputedStyle(document.documentElement).getPropertyValue(name), fallback);
+    function cssVar(style, name, fallback) {
+        return toHex(style.getPropertyValue(name), fallback);
     }
 
     function getColors() {
+        const style = getComputedStyle(document.documentElement);
         return {
-            active: cssVar("--lyrics-color-active", "#ff8c42"),
-            inactive: cssVar("--lyrics-color-inactive", "#777777"),
-            near: cssVar("--lyrics-color-light-inactive", "#b3b3b3"),
-            accent: cssVar("--spotui-accent", "#ff8c42"),
-            panel_bg: cssVar("--panel-bg-color", "#000000"),
-            panel_border: cssVar("--panel-border-color", "#ff8c42"),
-            panel_text: cssVar("--panel-text-color", "#ff8c42"),
-            bar_bg: cssVar("--player-bar-background", "#000000"),
-            bar_text: cssVar("--player-bar-text-color", "#ff8c42"),
-            visualizer: cssVar("--visualizer-color", "#ff8c42"),
+            active: cssVar(style, "--lyrics-color-active", "#ff8c42"),
+            inactive: cssVar(style, "--lyrics-color-inactive", "#777777"),
+            near: cssVar(style, "--lyrics-color-light-inactive", "#b3b3b3"),
+            accent: cssVar(style, "--spotui-accent", "#ff8c42"),
+            panel_bg: cssVar(style, "--panel-bg-color", "#000000"),
+            panel_border: cssVar(style, "--panel-border-color", "#ff8c42"),
+            panel_text: cssVar(style, "--panel-text-color", "#ff8c42"),
+            bar_bg: cssVar(style, "--player-bar-background", "#000000"),
+            bar_text: cssVar(style, "--player-bar-text-color", "#ff8c42"),
+            visualizer: cssVar(style, "--visualizer-color", "#ff8c42"),
         };
     }
 
@@ -6628,6 +6613,7 @@ body.spotui-standby .Root__now-playing-bar {
         const data = Spicetify.Player.data;
         const item = data?.item ?? data?.track;
         if (!item) return null;
+        const progressStyle = storageGet(CUSTOM_BAR_PROGRESS_STYLE) || "classic-block";
         return {
             type: "update",
             title: item.name ?? item.metadata?.title ?? "",
@@ -6640,8 +6626,8 @@ body.spotui-standby .Root__now-playing-bar {
             timestamp: Date.now(),
             colors: getColors(),
             lyrics: lyricsCache,
-            progress_style: storageGet(CUSTOM_BAR_PROGRESS_STYLE) || "classic-block",
-            progress_chars: PROGRESS_STYLES[storageGet(CUSTOM_BAR_PROGRESS_STYLE) || "classic-block"] || PROGRESS_STYLES["classic-block"],
+            progress_style: progressStyle,
+            progress_chars: PROGRESS_STYLES[progressStyle] || PROGRESS_STYLES["classic-block"],
             visualizer: app.visualizerOpen,
         };
     }
