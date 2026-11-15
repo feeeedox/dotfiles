@@ -86,7 +86,8 @@ configuration {
 	font: "Mono 12";
 	sort: false;
 	threads: 0;
-	click-to-exit: true;
+	/* Keep the Wayland layer sized to the menu so Hyprland can animate resizing. */
+	click-to-exit: false;
 /*	ignored-prefixes: "";*/
 /*	pid: "/run/user/1000/rofi.pid";*/
 

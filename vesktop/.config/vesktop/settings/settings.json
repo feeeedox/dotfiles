@@ -173,9 +173,6 @@
             "enabled": true,
             "toolbarDevMenu": false
         },
-        "ExpressionCloner": {
-            "enabled": true
-        },
         "F8Break": {
             "enabled": false
         },
@@ -623,7 +620,19 @@
         },
         "GifProviderSwitcher": {
             "enabled": true,
-            "provider": "klipy"
+            "provider": "tenor"
+        },
+        "DirectFileDownload": {
+            "enabled": false
+        },
+        "JumpToTop": {
+            "enabled": false
+        },
+        "ExpressionManager": {
+            "enabled": true
+        },
+        "MutedServersActivityBadge": {
+            "enabled": false
         }
     },
     "uiElements": {
@@ -640,7 +649,7 @@
         "authenticated": false,
         "url": "https://api.vencord.dev/",
         "settingsSync": false,
-        "settingsSyncVersion": 1791565284142
+        "settingsSyncVersion": 1793717777550
     },
     "windowsMaterial": "none",
     "nativeTitleBar": false

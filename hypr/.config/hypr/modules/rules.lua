@@ -146,6 +146,5 @@ hl.window_rule({
 hl.layer_rule({
     name     = "rofi",
     match    = { namespace = "rofi" },
-    blur     = true,
     animation = "popin 87%",
 })

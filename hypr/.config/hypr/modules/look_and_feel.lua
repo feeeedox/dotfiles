@@ -101,3 +101,21 @@ hl.config({
         disable_hyprland_logo   = false,
     },
 })
+
+hl.layer_rule({
+    name = "quickshell-blur",
+    match = {
+        namespace = "^borealis-bar$",
+    },
+    blur = true,
+    ignore_alpha = 0.7,
+})
+
+hl.layer_rule({
+    name = "borealis-launcher-blur",
+    match = {
+        namespace = "^borealis-launcher$",
+    },
+    blur = true,
+    ignore_alpha = 0.0,
+})
