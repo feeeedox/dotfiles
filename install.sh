@@ -39,7 +39,7 @@ fi
 PACKAGES=(
     hyprland kitty thunar rofi-wayland stow
     cliphist wl-clipboard gawk hyprshot
-    satty hyprpicker waybar awww python-pywalfox
+    satty hyprpicker waybar awww mpvpaper ffmpegthumbnailer python-pywalfox
     brightnessctl wireplumber playerctl wlogout
     swaync matugen-bin fastfetch hyprlock
 )

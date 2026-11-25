@@ -1,14 +1,37 @@
-#!/usr/bin/env fish
+#!/usr/bin/env bash
+set -e
 
-if test (count $argv) -ne 1
-    echo "Usage: $argv[0] <wallpaper>"
+if [[ $# != 1 || ! -f $1 || ! -r $1 ]]; then
+    echo "Usage: walset-backend <readable wallpaper file>" >&2
     exit 1
-end
+fi
 
-set wallpaper $argv[1]
+wallpaper=$(realpath -- "$1")
+cache="${XDG_CACHE_HOME:-$HOME/.cache}/walset"
+video="$cache/current.mp4"
+unit=walset-video.service
 
-notify-send "Changing Theme" "Applying new wallpaper and updating colors."
+trap 'notify-send -u critical "Wallpaper change failed" "See walset-backend output for details." || true' ERR
+mkdir -p -- "$cache"
+exec 9>"$cache/change.lock"
+flock 9
 
-matugen image "$wallpaper" --source-color-index 0
+notify-send "Changing Theme" "Applying new wallpaper and updating colors." || true
+if [[ ${1,,} == *.mp4 ]]; then
+    # Keep the frame available for Matugen templates and awww's restored image.
+    frame=$(mktemp --tmpdir="$cache" frame.XXXXXXXX.png)
+    trap 'rm -f -- "$frame"' EXIT
+    ffmpegthumbnailer -i "$wallpaper" -o "$frame" -s 1920
+    mv -fT -- "$frame" "$cache/poster.png"
+    matugen image "$cache/poster.png" --source-color-index 0 9>&-
+    ln -sfnT -- "$wallpaper" "$video"
+    systemctl --user restart "$unit"
+else
+    matugen image "$wallpaper" --source-color-index 0 9>&-
+    if [[ -L $video ]]; then
+        systemctl --user stop "$unit"
+        rm -- "$video"
+    fi
+fi
 
-notify-send "Theme Updated" "Your new wallpaper and colors have been applied."
+notify-send "Theme Updated" "Your new wallpaper and colors have been applied." || true

@@ -1,6 +1,6 @@
 # Matugen configuration file
 [config.wallpaper]
-command = "awww img {{ image }} --transition-type grow --transition-fps 144 --transition-pos $(shuf -i 0-1920 -n 1),$(shuf -i 0-1080 -n 1)"
+command = '''awww img '{{ image | replace: "'", "'\\''" }}' --transition-type grow --transition-fps 144 --transition-pos $(shuf -i 0-1920 -n 1),$(shuf -i 0-1080 -n 1)'''
 set = true
 
 # Terminal emulator
@@ -92,3 +92,7 @@ post_hook = '~/.config/matugen/post-hook-scripts/spotify-reload.sh'
 [templates.zed]
 input_path = '~/.config/matugen/templates/zed-colors.json'
 output_path = '~/.config/zed/themes/matugen.json'
+
+[templates.borealis]
+input_path  = "/mnt/externe_ssd/Development/projects/desktop/borealis-qs/matugen/quickshell.json"
+output_path = "/mnt/externe_ssd/Development/projects/desktop/borealis-qs/generated/colors.json"

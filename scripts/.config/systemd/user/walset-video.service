@@ -1,0 +1,8 @@
+[Unit]
+Description=Play the selected walset video wallpaper
+ConditionPathExists=%C/walset/current.mp4
+PartOf=graphical-session.target
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/mpvpaper -l bottom -o "no-audio loop-file=inf panscan=1 hwdec=auto" ALL %C/walset/current.mp4

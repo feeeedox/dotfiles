@@ -1,22 +1,21 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Directory containing the wallpapers
-wallpaper_dir="$HOME/Pictures/Wallpapers"
+cd -- "$HOME/Pictures/Wallpapers" || exit 1
+shopt -s nullglob nocaseglob
 
-# Current directory
-cwd="$(pwd)"
+wallpapers() {
+    local file icon
+    for file in *.jpg *.png *.jpeg *.mp4; do
+        [[ -f $file ]] || continue
+        icon="$PWD/$file"
+        if [[ ${file,,} == *.mp4 ]]; then
+            icon="thumbnail://$icon"
+        fi
+        printf '%s\0icon\x1f%s\n' "$file" "$icon"
+    done
+}
 
-cd "$wallpaper_dir" || exit 1
-
-IFS=$'\n' # Set IFS to newline to handle filenames with spaces
-
-# Get the selected wallpaper using rofi
-selected_wallpaper=$(for a in *.jpg *.png *.jpeg; do echo -en "$a\0icon\x1f$a\n"; done | rofi -dmenu -p "Select" -theme "~/.local/share/rofi/themes/expanded-grid.rasi") 
-
-#
-if [ -n "$selected_wallpaper" ]; then
-    walset-backend "$selected_wallpaper"
-fi
- 
-# Go back to the original directory
-cd "$cwd" || exit 1
+selected=$(wallpapers | rofi -dmenu -p "Select" \
+    -theme "$HOME/.local/share/rofi/themes/expanded-grid.rasi") || exit 0
+[[ -n $selected ]] || exit 0
+exec walset-backend "$selected"
